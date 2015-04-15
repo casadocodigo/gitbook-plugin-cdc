@@ -1,0 +1,19 @@
+{
+  "name": "gitbook-plugin-casa-do-codigo-pre-content",
+  "version": "0.0.1",
+  "description": "Gera tudo o que precede o conteudo principal",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "gitbook": ">=1.1.0"
+  },
+  "dependencies": {
+    "q": "1.0.1",
+    "swig": "1.3.2",
+    "fs-extra": "0.10.0",
+    "kramed": "0.4.3"
+  },
+  "devDependencies": {
+    "mocha": "1.18.2"
+  }
+}

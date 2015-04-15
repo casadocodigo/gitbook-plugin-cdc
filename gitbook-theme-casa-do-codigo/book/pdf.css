@@ -1,0 +1,87 @@
+body .page {
+	line-height: 1.8em;
+	font-weight: 300;
+	text-align: justify;
+}
+
+body .page h1 {
+	font-weight: normal;
+	line-height: 1.1em;
+}
+
+body .page h2 {
+	font-size: 16pt;
+	font-weight: bold;
+	font-variant: small-caps;
+	line-height: 1.1em;
+	padding: 2px 0 0 0;
+	margin: 1em 0 0.5em 0;
+}
+
+body .page h3 {
+	font-size: 11pt;
+	font-weight: bold;
+	line-height: 1.1em;
+	margin: 20px 0 15px 0;
+}
+
+body .page p {
+	margin: 0;
+	border: 0;
+	font-size: 11pt;
+}
+
+body .page ul {
+	font-size: 11pt;
+}
+
+body .page li {
+	font-size: 11pt;
+}
+
+body .page pre {
+	font-size: 12px;
+}
+
+body .page code {
+	font-size: 12px;
+}
+
+body .page figure {
+	text-align: center;
+	margin-bottom: 3em;
+	page-break-inside: avoid;
+}
+
+body .page figure figcaption {
+	margin-top: 2em;
+}
+
+p ~ p {
+	text-indent: 1.5em;
+}
+
+li > p ~ p {
+	text-indent: 0;
+}
+
+body .page .chapterHeader {
+	font-size: 12pt;
+	font-weight: normal;
+	text-align: left;
+	margin-top: 345px!important;
+	page-break-before: always;
+}
+body .page .chapterHeader:first-of-type {
+	page-break-before: avoid;
+}
+
+.page .book-chapter {
+	text-align: left;
+}
+
+.page .book-chapter-1 {
+	font-size: 26pt;
+	font-weight: normal;
+	margin: 0 0 1em 0;
+}

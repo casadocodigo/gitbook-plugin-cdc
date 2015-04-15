@@ -1,0 +1,55 @@
+<html>
+   <style>
+       ul { 
+           list-style-type: none; 
+       }
+       h1 {
+           margin-top: 110px!important;
+           margin-bottom: 70px!important;
+           font-size: 3em;
+       }
+       .chapter-toc {
+           padding-left: 0;
+       }
+       .chapter-toc li {
+           margin-bottom: 17px;
+           font-size: 12pt;
+       }
+       .chapter-name-toc {
+           font-weight: bold;
+       }
+       .chapter-page-toc {
+           font-weight: bold;
+           float: right;
+       }
+       .section-toc {
+           margin-top: 7px;
+       }
+       .section-toc li {
+           margin-bottom: 7px;
+           font-size: 11pt;
+       }
+       .section-page-toc {
+           float: right;
+       }
+   </style>
+   <body>
+        <div class="page">
+            <h1>Sumário</h1>
+            <ul class="chapter-toc">
+            {% for chapter in chapters %}
+                <li>
+                    <span class="chapter-name-toc">{{ chapter.title }}</span><span class="chapter-page-toc">{{ chapter.pageNumber }}</span>
+                    <ul class="section-toc">
+                        {% for section in chapter.sections %}
+                            <li>
+                                <span class="section-name-toc">{{ section.title }}</span><span class="section-page-toc">{{ section.pageNumber }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+            </ul>
+       </div>
+    </body>
+</html>

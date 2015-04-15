@@ -1,0 +1,90 @@
+body .page {
+	font-family: serif;
+	font-style: normal;
+	color: black;
+	overflow: hidden;
+}
+
+body .page h1 {
+	padding: 0px;
+}
+
+body .page h2 {
+	border-bottom: none;
+}
+
+body .page h3 {
+	padding: 0px;
+}
+
+body .page ul {
+	padding-left: 4em;
+}
+
+body .page li > ul {
+	padding-left: 1em;
+}
+
+body .page pre {
+	background-color: white;
+	overflow: hidden;
+	margin: 1em 0 1em 0;
+	padding: 0;
+}
+
+body .page pre code, body .page code {
+	background-color: white;
+}
+
+body .page a {
+	color: blue;
+}
+
+body .page img {
+	display: block;
+	margin: 0px auto;
+}
+
+body .page .figcaption {
+	text-align: center;
+	font-size: 0.9em;
+}
+
+body .page .figure {
+	margin: 10px auto;
+	page-break-inside: avoid;
+}
+
+
+body .page .chapterHeader {
+	font-variant: small-caps;
+}
+
+.page .book-chapter {
+	display: block;
+}
+
+.page .book-chapter-1 {
+	border-bottom: none;
+}
+
+body .page blockquote {
+	color: black;
+	padding: 15px;
+	margin: 10px 0 20px 0;
+	border-collapse: collapse;
+	border: 1px solid black;
+	page-break-inside: avoid;
+}
+
+body .page blockquote  p:first-of-type strong:first-child {
+	font-variant: small-caps;
+}
+
+body .page-toc h1 {
+	border-bottom: none;
+}
+
+body .page-toc {
+	margin: 15px;
+}
