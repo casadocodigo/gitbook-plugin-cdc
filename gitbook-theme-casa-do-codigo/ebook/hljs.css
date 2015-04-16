@@ -1,0 +1,56 @@
+.hljs {
+	display: block !important;
+	background: white !important;
+	color: #4d4d4c !important;
+	padding: .5em !important;
+}
+
+.hljs-title, .hljs-variable,.hljs-tag,.hljs-regexp, .hljs-keyword, .lang-ruby .hljs-constant, .lang-ruby .hljs-class .hljs-title, .lang-xml .hljs-tag .hljs-title,.lang-xml .hljs-pi {
+	color: #7F0055 !important;
+}
+
+.hljs-attribute, .hljs-number,.hljs-preprocessor,.hljs-pragma,.hljs-literal,.hljs-params,.hljs-constant {
+	color: #000000 !important;
+}
+
+.hljs-comment {
+	color: #3F7F5F !important;
+}
+
+.hljs-built_in {
+	color: #008000 !important;
+}
+
+.lang-xml .hljs-doctype, .lang-html .hljs-doctype { 
+	color: #606060 !important; font-style: italic !important;
+}
+
+.hljs-string,.hljs-value,.hljs-inheritance,.hljs-header,.lang-ruby .hljs-symbol,.lang-xml .hljs-cdata {
+	color: #2A00FF !important;
+}
+
+.hljs-function, .lang-python .hljs-decorator,.lang-python .hljs-title,.lang-ruby .hljs-function .hljs-title,.lang-ruby .hljs-title .hljs-keyword,.lang-perl .hljs-sub {
+	color: #7F0055 !important;
+}
+
+.lang-javascript .hljs-title,.coffeescript .hljs-title {
+	color: #000000 !important;
+}
+
+.lang-coffeescript .lang-javascript,.lang-javascript .lang-xml,.lang-tex .hljs-formula,.lang-xml .lang-javascript,.lang-xml .lang-vbscript,.lang-xml .lang-css,.lang-xml .hljs-cdata {
+	opacity: .5 !important;
+}
+
+/* CSS */
+.lang-css .hljs-hexcolor {
+	color: #3e999f !important;
+}
+
+.lang-css .hljs-tag, .lang-css .hljs-attribute, .lang-css .hljs-value, .lang-css .hljs-id, .lang-css .hljs-class,.lang-css .hljs-pseudo {
+	color: #7F0055 !important;
+}
+
+.lang-css .hljs-rules, .lang-css .hljs-rule {
+	color: #000000 !important;
+}
+

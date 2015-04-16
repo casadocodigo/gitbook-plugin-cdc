@@ -1,0 +1,49 @@
+body .page {
+	line-height: 1em;
+	-ms-text-size-adjust: auto;
+	-webkit-text-size-adjust: auto;
+}
+
+body .page h1 {
+	font-size: 1.52em;
+}
+
+body .page h2 {
+	font-size: 1.2em;
+}
+
+body .page h3 {
+	font-size: 1em;
+	line-height: 1em;
+	margin: 1em 0 1em 0;
+}
+
+body .page ul {
+	font-size: 1em;
+}
+
+body .page li {
+	font-size: 1em;
+}
+
+body .page pre {
+	font-size: 0.85em;
+}
+
+body .page pre code, body .page code {
+	font-size: 0.85em;
+}
+
+body .page :not(h1) + h2 {
+	margin-top: 2.7em;
+}
+
+body .page .chapterHeader {
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-top: 1.05em!important;
+}
+
+.page .book-chapter-1 {
+	margin: 0 0 .9em 0;
+}

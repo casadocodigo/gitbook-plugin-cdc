@@ -42,9 +42,11 @@ function handlePage(page) {
     page.sections.forEach(function (section) {
         if (section.type === "normal") {
             var $ = cheerio.load(section.content);
-            //só colocar numeros de secao e ajustar imagens para ebook
-            if (format === "ebook") {
+            if(format === "ebook" || format === "site"){
                 addSectionNumbers($, chapterNumber, section);
+            }
+            //só ajustar imagens para ebook
+            if (format === "ebook") {
                 adjustImages($, chapterNumber, section, extension);
             }
             removeComments($, section);
@@ -61,13 +63,13 @@ function handlePageAfter(page) {
     //é colocado depois do hook de page
 
     var format = this.options.format;
-    if (format === "ebook") {
+    if (format === "ebook" || format === "site") {
         var $ = cheerio.load(page.content);
         var chapterHeader =
             $("<div>")
             .addClass("chapterHeader")
             .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(page));
-        $("h1")
+        $("h1.book-chapter")
             .before(chapterHeader);
 
         page.content = $.html();
