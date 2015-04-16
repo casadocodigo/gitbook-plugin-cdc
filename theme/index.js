@@ -11,7 +11,7 @@ module.exports = {
 	ebook : function () {
 		var extension = obtainExtension(this.options);
 		return {
-			assets: "./ebook",
+			assets: "./theme/ebook",
 			css: [
 				"ebook.css",
 				style[extension],
@@ -27,10 +27,10 @@ module.exports = {
 		]
 	},
 	templates: {
-		"ebook:sumary": "./ebook/templates/gitbook/summary.html",
-		"site:page": "./book/templates/gitbook/page.html",
-		"site:langs": "./book/templates/gitbook/langs.html",
-		"site:glossary": "./book/templates/gitbook/glossary.html"
+		"ebook:sumary": "./theme/ebook/templates/gitbook/summary.html",
+		"site:page": "./theme/book/templates/gitbook/page.html",
+		"site:langs": "./theme/book/templates/gitbook/langs.html",
+		"site:glossary": "./theme/book/templates/gitbook/glossary.html"
 	},
 	
 	obtainExtension: obtainExtension
