@@ -7,7 +7,7 @@ var kramed = require("kramed");
 var calibre = require("./calibre.js");
 var htmlRenderer = require("./htmlRenderer.js");
     
-var ebookPlugin = require("./../gitbook-plugin-casa-do-codigo-ebook");
+var util = require("./../util.js");
 
 function renderPdf(mdFile, htmlFile, pdfFile, template){
     return Q().then(function(){
@@ -22,10 +22,10 @@ function renderPdf(mdFile, htmlFile, pdfFile, template){
     }).then(function (html) {
         return Q.nfcall(fs.writeFile, htmlFile, html);
     }).then(function(){
-        ebookPlugin.pdfOptions["--pdf-header-template"] = null;
-        ebookPlugin.pdfOptions["--chapter"] = "/";
-        ebookPlugin.pdfOptions["--page-breaks-before"] = "/";
-        return calibre.generate(htmlFile, pdfFile, ebookPlugin.pdfOptions);
+        util.pdfOptions["--pdf-header-template"] = null;
+        util.pdfOptions["--chapter"] = "/";
+        util.pdfOptions["--page-breaks-before"] = "/";
+        return calibre.generate(htmlFile, pdfFile, util.pdfOptions);
     });
 }    
 
