@@ -2,7 +2,7 @@ var path = require("path");
 
 var cheerio = require("cheerio");
 
-var theme = require("gitbook-theme-casa-do-codigo");
+var util = require("./../util.js");
 
 var CHAPTER_HEADER_TITLE = "Capítulo ";
 var CAPTION_PREFIX = "Figura ";
@@ -10,33 +10,16 @@ var TOC_TITLE = "Sumário";
 
 var WIDTH_REGEX = /\{w=(\d+)%?\}$/;
 
-var PDF_OPTIONS = {
-    "--pdf-page-numbers": null,
-    "--disable-font-rescaling": true,
-    "--paper-size": null,
-    "--custom-size": "155x230",
-    "--unit": "millimeter",
-    "--pdf-default-font-size": "11",
-    "--pdf-mono-font-size": "11",
-    "--margin-left": "62",
-    "--margin-right": "62",
-    "--margin-top": "62",
-    "--margin-bottom": "62"
-};
-
 module.exports = {
-	hooks: {
-        "page": handlePage,
-        "page:after": handlePageAfter,
-         "ebook:before": handleEbookBefore
-    },
-    pdfOptions: PDF_OPTIONS
+    "handlePage": handlePage,
+    "handlePageAfter": handlePageAfter,
+    "handleEbookBefore": handleEbookBefore
 };
 
 
 function handlePage(page) {
     var format = this.options.format;
-    var extension = theme.obtainExtension(this.options);
+    var extension = util.obtainExtension(this.options);
 
     var chapterNumber = obtainChapterNumber(page);
     page.sections.forEach(function (section) {
@@ -80,7 +63,7 @@ function handlePageAfter(page) {
 
 
 function handleEbookBefore(options) {
-    var extension = theme.obtainExtension(this.options);
+    var extension = util.obtainExtension(this.options);
 
     //options["-d debug"] = true;
 
@@ -97,13 +80,13 @@ function handleEbookBefore(options) {
 
     if (extension === "pdf") {
         //só pra PDF
-        options["--pdf-page-numbers"] = PDF_OPTIONS["--pdf-page-numbers"];
-        options["--disable-font-rescaling"] = PDF_OPTIONS["--disable-font-rescaling"];
-        options["--paper-size"] = PDF_OPTIONS["--paper-size"];
-        options["--custom-size"] = PDF_OPTIONS["--custom-size"];
-        options["--unit"] = PDF_OPTIONS["--unit"];
-        options["--pdf-default-font-size"] = PDF_OPTIONS["--pdf-default-font-size"];
-        options["--pdf-mono-font-size"] = PDF_OPTIONS["--pdf-mono-font-size"];
+        options["--pdf-page-numbers"] = util.pdfOptions["--pdf-page-numbers"];
+        options["--disable-font-rescaling"] = util.pdfOptions["--disable-font-rescaling"];
+        options["--paper-size"] = util.pdfOptions["--paper-size"];
+        options["--custom-size"] = util.pdfOptions["--custom-size"];
+        options["--unit"] = util.pdfOptions["--unit"];
+        options["--pdf-default-font-size"] = util.pdfOptions["--pdf-default-font-size"];
+        options["--pdf-mono-font-size"] = util.pdfOptions["--pdf-mono-font-size"];
     }
 
     return options;
