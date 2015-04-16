@@ -16,7 +16,6 @@ module.exports = {
     "handleEbookBefore": handleEbookBefore
 };
 
-
 function handlePage(page) {
     var format = this.options.format;
     var extension = util.obtainExtension(this.options);
