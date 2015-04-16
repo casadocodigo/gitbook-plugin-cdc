@@ -20,7 +20,7 @@ module.exports = {
 		};
 	},
 	book : {
-		assets: "./book",
+		assets: "./theme/book",
 		css: [
 			"book.css",
 			"hljs.css"
