@@ -1,3 +1,5 @@
+var path = require("path");
+
 var PDF_OPTIONS = {
     "--pdf-page-numbers": null,
     "--disable-font-rescaling": true,
