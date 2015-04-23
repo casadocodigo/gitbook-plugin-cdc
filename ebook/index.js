@@ -130,7 +130,10 @@ function adjustImages($, chapterNumber, section, extension) {
         //insere div com caption
         var parent = img.parent();
         img.attr("alt", text).remove();
-        var caption = $("<p class='figcaption'>").text(CAPTION_PREFIX + chapterNumber + "." + (i + 1) + ": " + text);
+        var caption = $("<p class='figcaption'>");
+        if(text.trim().length > 0){
+            caption.text(CAPTION_PREFIX + chapterNumber + "." + (i + 1) + ": " + text.trim());
+        }
         var figure = $("<div class='figure'>").append(img).append(caption);
         parent.after(figure);
     });
