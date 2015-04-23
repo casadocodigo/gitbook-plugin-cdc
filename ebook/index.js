@@ -17,6 +17,8 @@ module.exports = {
 };
 
 function handlePage(page) {
+	verifyChapterTitle(page);
+
     var format = this.options.format;
     var extension = util.obtainExtension(this.options);
 
@@ -85,6 +87,13 @@ function handleEbookBefore(options) {
     }
 
     return options;
+}
+
+function verifyChapterTitle(page){
+	var chapter = page.progress.current.title;
+	if(/^[0-9]/.test(chapter)){
+		throw new Error("Chapter can't begin with numbers: " + chapter);
+	}
 }
 
 function obtainChapterNumber(page) {
