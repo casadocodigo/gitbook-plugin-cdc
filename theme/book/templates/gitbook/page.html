@@ -23,7 +23,9 @@
                 <div class="page-inner">
                 {% block page_inner %}
                 {% for section in content %}
-                    <img class="logo" src="{{ options.coverURL }}" />
+                	{% if options.coverURL %}
+                        <img class="logo" src="{{ options.coverURL }}" />
+                    {% endif %}
                     <section class="{{ section.type }}" id="section-{{ section.id }}">
                        <h1 class="book-chapter">{{progress.current.title}}</h1>
                     {% if section.type == "normal" %}
