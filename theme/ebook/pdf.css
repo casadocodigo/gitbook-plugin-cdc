@@ -85,10 +85,3 @@ body .page .chapterHeader:first-of-type {
 	font-weight: normal;
 	margin: 0 0 1em 0;
 }
-
-/* quotes no inicio de capitulo */
-.page .normal > p:first-child > em:first-child {
-	display: block;
-	margin-bottom: 3em;
-}
-
