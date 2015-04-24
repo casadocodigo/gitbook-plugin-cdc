@@ -87,7 +87,7 @@ body .page .chapterHeader:first-of-type {
 }
 
 /* quotes no inicio de capitulo */
-.page .book-chapter + .normal p:first-child > em {
+.page .normal > p:first-child > em:first-child {
 	display: block;
 	margin-bottom: 3em;
 }
