@@ -76,14 +76,16 @@ function handleEbookBefore(options) {
     }
 
     if (extension === "pdf") {
+        var pdfOptions = util.obtainPdfOptions(this.options);
+
         //só pra PDF
-        options["--pdf-page-numbers"] = util.pdfOptions["--pdf-page-numbers"];
-        options["--disable-font-rescaling"] = util.pdfOptions["--disable-font-rescaling"];
-        options["--paper-size"] = util.pdfOptions["--paper-size"];
-        options["--custom-size"] = util.pdfOptions["--custom-size"];
-        options["--unit"] = util.pdfOptions["--unit"];
-        options["--pdf-default-font-size"] = util.pdfOptions["--pdf-default-font-size"];
-        options["--pdf-mono-font-size"] = util.pdfOptions["--pdf-mono-font-size"];
+        options["--pdf-page-numbers"] = pdfOptions["--pdf-page-numbers"];
+        options["--disable-font-rescaling"] = pdfOptions["--disable-font-rescaling"];
+        options["--paper-size"] = pdfOptions["--paper-size"];
+        options["--custom-size"] = pdfOptions["--custom-size"];
+        options["--unit"] = pdfOptions["--unit"];
+        options["--pdf-default-font-size"] = pdfOptions["--pdf-default-font-size"];
+        options["--pdf-mono-font-size"] = pdfOptions["--pdf-mono-font-size"];
     }
 
     return options;

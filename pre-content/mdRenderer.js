@@ -7,9 +7,7 @@ var kramed = require("kramed");
 var calibre = require("./calibre.js");
 var htmlRenderer = require("./htmlRenderer.js");
     
-var util = require("./../util.js");
-
-function renderPdf(mdFile, htmlFile, pdfFile, template){
+function renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions){
     return Q().then(function(){
         return Q.nfcall(fs.readFile, mdFile);
     }).then(function(mdData){
@@ -22,21 +20,21 @@ function renderPdf(mdFile, htmlFile, pdfFile, template){
     }).then(function (html) {
         return Q.nfcall(fs.writeFile, htmlFile, html);
     }).then(function(){
-        util.pdfOptions["--pdf-header-template"] = null;
-        util.pdfOptions["--chapter"] = "/";
-        util.pdfOptions["--page-breaks-before"] = "/";
-        return calibre.generate(htmlFile, pdfFile, util.pdfOptions);
+        pdfOptions["--pdf-header-template"] = null;
+        pdfOptions["--chapter"] = "/";
+        pdfOptions["--page-breaks-before"] = "/";
+        return calibre.generate(htmlFile, pdfFile, pdfOptions);
     });
 }    
 
-function renderPdfs(files, template){
+function renderPdfs(files, template, pdfOptions){
     return Q()
         .then(function(){
             var promises = [];
             files.forEach(function(mdFile){
                 var htmlFile = mdFile.replace(".md", ".html");
                 var pdfFile = htmlFile.replace(".html", ".pdf");
-                promises.push(renderPdf(mdFile, htmlFile, pdfFile, template));
+                promises.push(renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions));
             });
             return Q.all(promises);
         });

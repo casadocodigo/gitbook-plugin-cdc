@@ -38,7 +38,8 @@ module.exports = {
                 author: this.options.author,
                 publisher: this.options.publisher,
                 title: this.options.title
-            }
+            },
+            options : util.obtainPdfOptions(this.options)
         };
 
         return Q().then(function () {
@@ -77,10 +78,10 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
     }).then(function (html) {
         return Q.nfcall(fs.writeFile, tocHTML, html);
     }).then(function () {
-        util.pdfOptions["--pdf-header-template"] = "<p id='ebook-header' style='border-bottom: 1px solid black; margin-top: 36pt;'><span class='odd_page'><span>Casa do Código</span><span style='float:right'>Sumário</span></span><span class='even_page'><span>Sumário</span><span style='float:right'>Casa do Código</span></span></p>";
-        util.pdfOptions["--chapter"] = "/";
-        util.pdfOptions["--page-breaks-before"] = "/";
-        return calibre.generate(tocHTML, tocPDF, util.pdfOptions);
+        pdfInfo.options["--pdf-header-template"] = "<p id='ebook-header' style='border-bottom: 1px solid black; margin-top: 36pt;'><span class='odd_page'><span>Casa do Código</span><span style='float:right'>Sumário</span></span><span class='even_page'><span>Sumário</span><span style='float:right'>Casa do Código</span></span></p>";
+        pdfInfo.options["--chapter"] = "/";
+        pdfInfo.options["--page-breaks-before"] = "/";
+        return calibre.generate(tocHTML, tocPDF, pdfInfo.options);
     }).then(function () {
         return tocPDF;
     });
@@ -109,7 +110,7 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         return introMDs;
     }).then(function (introMDs) {
         var introTemplate = path.resolve(__dirname , 'book/templates/intro.tpl.html');
-        return mdRenderer.renderPdfs(introMDs, introTemplate);
+        return mdRenderer.renderPdfs(introMDs, introTemplate, pdfInfo.options);
     }).then(function () {
         preContent = extraFiles.concat(introFiles);
         preContent.push(tocPDF);
