@@ -41,7 +41,7 @@ function handlePage(page) {
 function handlePageAfter(page) {
     //inserindo numero do capitulo
     //tem que fazer no page:after
-    //pq o h1 com titutlo do capitulo
+    //pq o h1 com titulo do capitulo
     //é colocado depois do hook de page
 
     var format = this.options.format;
@@ -99,13 +99,8 @@ function verifyChapterTitle(page){
 }
 
 function obtainChapterNumber(page) {
-    //obtem numero do capitulo a partir do nome do .md
-    var chapterNumber = 1;
-    var regexMatch = page.path.match(/\d+/);
-    if (regexMatch && regexMatch[0]) {
-        chapterNumber = Number(regexMatch[0]);
-    }
-    return chapterNumber;
+    //obtem numero do capitulo a partir de info o gitbook
+    return Number(page.progress.current.level) + 1;
 }
 
 function addSectionNumbers($, chapterNumber, section) {
