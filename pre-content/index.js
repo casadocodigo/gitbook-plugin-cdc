@@ -88,7 +88,8 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
 }
 
 function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
-    var extrasDir = path.join(inputDir, 'extras');
+    var extrasDir = process.env.CDC_EXTRAS_DIR;
+    var inBookExtrasDir = path.join(inputDir, 'extras');
     var introDir = path.join(outputDir, "intro");
 
     var extraFiles = [];
@@ -100,6 +101,12 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         return dir.listFilesByName(extrasDir);
     }).then(function (extras) {
         extraFiles = extras;
+    }).then(function () {
+        return dir.listFilesByName(inBookExtrasDir);
+    }).then(function (extras) {
+        extras.forEach(function(file){
+            extraFiles.push(file);
+        });
     }).then(function () {
         return dir.listFilesByName(introDir);
     }).then(function (introMDs) {
