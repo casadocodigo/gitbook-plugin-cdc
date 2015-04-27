@@ -52,4 +52,18 @@ describe("pdftk", function(){
         
     });
 
+    it('should work with spaces in the filename', function(done){
+        
+        var owasp = path.resolve('./extras/3-copy right e propagandas.pdf');
+        
+        var files = [owasp];
+        
+        pdftk.extractNumberOfPagesFromFiles(files)
+        .then(function(pN){
+            assert.equal(3, pN);
+            done();
+        }).done();
+        
+    });
+
 });

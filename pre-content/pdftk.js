@@ -10,9 +10,10 @@ function extractNumberOfPages(pdfFile) {
 
     return Q().then(function () {
     
-        var pdftkCall = 'pdftk ' + pdfFile + ' dump_data';
+        var pdftkCall = 'pdftk "' + pdfFile + '" dump_data';
 
-        console.log("pdftk - Calling pdftk...")
+        console.log("pdftk - Calling pdftk...");
+        console.log(pdftkCall);
 
         exec(pdftkCall, function (error, stdout, stderr) {
             if (error) {
@@ -71,10 +72,11 @@ function extractTOC(pdfFile) {
 
     return Q().then(function () {
     
-        var pdftkCall = 'pdftk ' + pdfFile + ' dump_data';
+        var pdftkCall = 'pdftk "' + pdfFile + '" dump_data';
 
         console.log("pdftk - Calling pdftk...")
-
+        console.log(pdftkCall);
+        
         exec(pdftkCall, function (error, stdout, stderr) {
             if (error) {
                 console.log("pdftk - Error while extracting TOC. :/");
@@ -170,15 +172,15 @@ function generatePdftkJoinCall(pdfFile, files, outputFile){
         return " " + String.fromCharCode(letter);
     }
     function letterAndFile(letter, i){
-        return onlyLetter(letter, i) + "=" + files[i];
+        return onlyLetter(letter, i) + '="' + files[i] + '"';
     }
     
-    var pdftkCall = "pdftk A=" + pdfFile;
+    var pdftkCall = 'pdftk A="' + pdfFile + '"';
     pdftkCall += filesRanges(files, letterAndFile) 
     //TODO: descobrir o numero de paginas do toc original (considerando 1)
-    pdftkCall +=  " cat A1";
+    pdftkCall +=  ' cat A1';
     pdftkCall += filesRanges(files, onlyLetter) 
-    pdftkCall += " A3-end output " + outputFile;
+    pdftkCall += ' A3-end output ' + outputFile;
     return pdftkCall;
 }
 
@@ -192,6 +194,8 @@ function updateBookmarkInfo(inputFile, info, infoFile, outputFile){
             var pdftkCall = 'pdftk ' + inputFile + ' update_info ' + infoFile + ' output ' + outputFile;
 
             console.log("pdftk - Calling pdftk...")
+            console.log(pdftkCall);
+            
             exec(pdftkCall, function (error, stdout, stderr) {
                 if (error) {
                     console.log("pdftk - Error while updating bookmark info. :/");
