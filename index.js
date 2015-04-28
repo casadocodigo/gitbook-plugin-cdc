@@ -1,12 +1,8 @@
-var theme = require("./theme");
 var ebook = require("./ebook");
 var preContent = require("./pre-content");
 
 module.exports = {
-	  ebook : theme.ebook
-    , book : theme.book
-    , templates: theme.templates
-    , hooks: {
+    hooks: {
         "page": function(page) {
             return ebook.handlePage.call(this, page);
         }
