@@ -1,4 +1,3 @@
 node_modules
-.npmignore
 pre-content/test/integration/debug
 pre-content/test/integration/toc.pdf
