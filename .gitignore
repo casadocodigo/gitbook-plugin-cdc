@@ -1,3 +1,4 @@
+*.iml
 node_modules
 pre-content/test/integration/debug
 pre-content/test/integration/toc.pdf
