@@ -15,54 +15,56 @@ var dir = require("./dir.js");
 var mdRenderer = require("./mdRenderer.js");
 
 module.exports = {
-    "finish": function () {
-        var command = this.options._name;
-        var extension = util.obtainExtension(this.options);
-
-        if (extension !== "pdf") {
-            return;
-        }
-
-        var inputDir = this.options.input;
-        var outputDir = this.options.output;
-
-        var originalPDF = path.join(outputDir, "index.pdf");
-
-        var pdfWithPreContent = path.join(outputDir, "./index-with-pre-content.pdf");
-
-        var pdfWithBookmarkInfo = path.join(outputDir, "./index-with-pre-content-and-bookmarks.pdf");
-        var pdfWithPageNumberInfo = path.join(outputDir, "./index-with-pre-content-bookmarks-and-page-numbers.pdf");
-
-        var pdfInfo = {
-            book : {
-                author: this.options.author,
-                publisher: this.options.publisher,
-                title: this.options.title
-            },
-            options : util.obtainPdfOptions(this.options)
-        };
-
-        return Q().then(function () {
-            return renderTocPDF(outputDir, originalPDF, pdfInfo);
-        }).then(function (tocPDF) {
-            return handlePreContent(inputDir, outputDir, tocPDF, pdfInfo);
-        }).then(function (preContent) {
-            return pdftk.join(originalPDF, preContent, pdfWithPreContent);
-        }).then(function () {
-            var pdfBookmarkInfoFile = path.join(outputDir, "./bookmark-info.txt");
-            return pdftk.updateBookmarkInfo(pdfWithPreContent, pdfInfo, pdfBookmarkInfoFile, pdfWithBookmarkInfo);
-        }).then(function () {
-            var pdfPageNumberInfoFile = path.join(outputDir, "./page-number-info.txt");
-            return gs.updatePageNumberInfo(pdfWithBookmarkInfo, pdfInfo, pdfPageNumberInfoFile, pdfWithPageNumberInfo);
-        }).then(function () {
-            if (command === "pdf") {
-                return Q.nfcall(fs.copy, pdfWithPageNumberInfo, originalPDF);
-            }
-            return Q();
-        });
-    }
+    "finish": finish
 };
 
+function finish() {
+    var command = this.options._name;
+    var extension = util.obtainExtension(this.options);
+
+    if (extension !== "pdf") {
+        return;
+    }
+
+    var inputDir = this.options.input;
+    var outputDir = this.options.output;
+
+    var originalPDF = path.join(outputDir, "index.pdf");
+
+    var pdfWithPreContent = path.join(outputDir, "./index-with-pre-content.pdf");
+
+    var pdfWithBookmarkInfo = path.join(outputDir, "./index-with-pre-content-and-bookmarks.pdf");
+    var pdfWithPageNumberInfo = path.join(outputDir, "./index-with-pre-content-bookmarks-and-page-numbers.pdf");
+
+    var pdfInfo = {
+        book : {
+            author: this.options.author,
+            publisher: this.options.publisher,
+            title: this.options.title
+        },
+        options : util.obtainPdfOptions(this.options)
+    };
+
+    return Q().then(function () {
+        return renderTocPDF(outputDir, originalPDF, pdfInfo);
+    }).then(function (tocPDF) {
+        return handlePreContent(inputDir, outputDir, tocPDF, pdfInfo);
+    }).then(function (preContent) {
+        return pdftk.join(originalPDF, preContent, pdfWithPreContent);
+    }).then(function () {
+        var pdfBookmarkInfoFile = path.join(outputDir, "./bookmark-info.txt");
+        return pdftk.updateBookmarkInfo(pdfWithPreContent, pdfInfo, pdfBookmarkInfoFile, pdfWithBookmarkInfo);
+    }).then(function () {
+        var pdfPageNumberInfoFile = path.join(outputDir, "./page-number-info.txt");
+        return gs.updatePageNumberInfo(pdfWithBookmarkInfo, pdfInfo, pdfPageNumberInfoFile, pdfWithPageNumberInfo);
+    }).then(function () {
+        if (command === "pdf") {
+            return Q.nfcall(fs.copy, pdfWithPageNumberInfo, originalPDF);
+        }
+        return Q();
+    });
+}
+    
 function renderTocPDF(outputDir, originalPDF, pdfInfo) {
     var tocTemplate = path.resolve(__dirname , 'book/templates/toc.tpl.html');
     var tocHTML = path.join(outputDir, "toc.html");
