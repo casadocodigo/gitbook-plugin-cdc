@@ -1,11 +1,13 @@
 # gitbook-plugin-cdc
+
 Este plugin está organizado em dois sub-módulos:
 * **ebook**: manipula conteúdo do livro como nomes das seções, legenda de imagens, etc...
 * **pre-content**: insere conteúdo _no início_ do livro como copyright, propagandas, apresentação dos autores, etc...
 
 
 
-## Organização do código
+## Código
+
 
 ### [index.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/index.js)
 
@@ -18,6 +20,8 @@ Os hooks configurados são:
 * `finish`: disparado ao fim da geração do ebook ou site, chama a função _finish_ do sub-módulo _pre-content_
 
 As funções acima são chamadas com código do tipo `funcao.call(this, argumento)`, para que o `this` do gitbook seja propagado para cada função.
+
+___
 
 ### [util.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/util.js)
 Contém as funções comuns:
@@ -71,11 +75,14 @@ Para sobreescrever as opções anteriores, modifique o `book.json` conforme a se
 }
 ```
 
+___
+
 ### [ebook/index.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/ebook/index.js)
 
 Manipula conteúdo do livro.
 
-Dependências: [cheerio](https://github.com/cheeriojs/cheerio), uma implementação enxuta do jQuery para Node.js.
+Dependências externas: 
+* [cheerio](https://github.com/cheeriojs/cheerio), uma implementação enxuta do jQuery para Node.js.
 
 #### handlePage
 Parâmetros:
@@ -125,3 +132,51 @@ Se a extensão do livro a ser gerado for `mobi`, são configuradas as seguintes 
 * `--toc-title`: modificado para _Sumário_
 
 Se a extensão do livro a ser gerado for `pdf`, são configuradas as opções obtidas a partir da função _obtainPdfOptions_ do _util.js_. Veja acima.
+
+
+___
+
+### [pre-content/index.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/index.js)
+
+Insere conteúdo no início do livro.
+
+Dependências externas: 
+* [fs-extra](https://github.com/jprichardson/node-fs-extra), métodos extras para o módulo de sistemas de arquivo do Node.js.
+* [Q](https://github.com/kriskowal/q), biblioteca de promises para Node.js.
+
+#### finish
+
+Função associada ao hook de `finish` do gitbook, que é chamada no fim da geração de um site ou ebook pelo gitbook.
+
+Se a extensão do livro a ser gerado não for pdf, não faz nada.
+
+Agora, se for pdf, faz os seguintes passos:
+1. **cria sumário** utilizando a função `renderTocPDF`
+1. **adiciona conteúdo no antes do sumário** através da função `handlePreContent`
+1. **junta conteúdos em um pdf só** utilizando a função `join` do módulo `pdftk`, gerando o arquivo `index-with-pre-content.pdf`
+1. **atualiza indíce** do pdf usando a função `updateBookmarkInfo` do módulo `pdftk`, gerando o arquivo `index-with-pre-content-and-bookmarks.pdf`
+1. **atualiza informações de número das páginas** do pdf com a função `updatePageNumberInfo` do módulo `gs`, gerando o arquivo `index-with-pre-content-bookmarks-and-page-numbers.pdf`
+1. há um passo final, se o comando executado for `gitbook pdf`. Os arquivos intermediários são gerados no diretório `/tmp` e logo em seguida apagados. Por isso, copiamos o `/tmp/index-with-pre-content-bookmarks-and-page-numbers.pdf` para `/tmp/index.pdf`. O gitbook se encarrega de transformá-lo no arquivo, chamado `book.pdf`.
+ 
+#### renderTocPDF
+Parâmetros:
+* outputDir - `String` com o caminho do diretório de saída 
+* originalPDF - `String` com o caminho do pdf gerado pelo gitbook/calibre
+* pdfInfo - `Object` com informações do livro como autor, editora e título, além das opções para geração do pdf (que foram obtidas da função `obtainPdfOptions` de `util.js`)
+
+Retorno:
+* `String` com o caminho do pdf gerado que contém o sumário
+
+Função privada de `pre-content/index.js` que é responsável por gerar um pdf com o sumário, a partir do pdf original do gitbook/calibre.
+
+Os passos para gerar o pdf com o sumário são os seguintes:
+1. extrair do indíce do pdf original, através do função `extractTOC` do módulo `pdftk.js`,  um `Object` que representa com informações sobre os capítulos e seções com suas respectivas páginas.
+2. atualizar as páginas do `Object` obtida no passo anterior, utilizando a função `update` do módulo `toc.js`, para que o primeiro capítulo comece na página 1. Nas informações extraídas pelo _pdftk_, o primeiro capítulo começa na página 3, porque é considerada a capa e uma página com o sumário original (e incompleto) gerado pelo gitbook.
+3. com o `Object` com as páginas atualizadas, é renderizado um html através da função `render` do módulo `htmlRenderer.js`. Para isso, é passado o template `book/templates/toc.tpl.html`.
+4. a `String` com o html renderizado no passo anterior é salva em um arquivo
+5. para gerar um pdf com o sumário é chamada a função `generate` do módulo `calibre` passando o caminho do arquivo html, o caminho onde o arquivo pdf deve ser gerado e opções para geração do pdf. As opções do calibre vem do objeto `pdfInfo`. Algumas opções são modificadas:
+    * `--pdf-header-template` fica com o título fixo (_Sumário_),
+    * `--chapter` fica com `/` para desligar a detecção de capítulos e
+    * `--page-breaks-before` fica com `/` para desabilitar quebras de página.
+
+No fim desses passos, temos um pdf com o sumário do livro com capítulos e seções e as respectivas páginas.
