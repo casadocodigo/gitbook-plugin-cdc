@@ -151,6 +151,7 @@ Função associada ao hook de `finish` do gitbook, que é chamada no fim da gera
 Se a extensão do livro a ser gerado não for pdf, não faz nada.
 
 Agora, se for pdf, faz os seguintes passos:
+
 1. **cria sumário** utilizando a função `renderTocPDF`
 1. **adiciona conteúdo no antes do sumário** através da função `handlePreContent`
 1. **junta conteúdos em um pdf só** utilizando a função `join` do módulo `pdftk`, gerando o arquivo `index-with-pre-content.pdf`
@@ -170,6 +171,7 @@ Retorno:
 Função privada de `pre-content/index.js` que é responsável por gerar um pdf com o sumário, a partir do pdf original do gitbook/calibre.
 
 Os passos para gerar o pdf com o sumário são os seguintes:
+
 1. extrair do indíce do pdf original, através do função `extractTOC` do módulo `pdftk.js`,  um `Object` que representa com informações sobre os capítulos e seções com suas respectivas páginas.
 2. atualizar as páginas do `Object` obtida no passo anterior, utilizando a função `update` do módulo `toc.js`, para que o primeiro capítulo comece na página 1. Nas informações extraídas pelo _pdftk_, o primeiro capítulo começa na página 3, porque é considerada a capa e uma página com o sumário original (e incompleto) gerado pelo gitbook.
 3. com o `Object` com as páginas atualizadas, é renderizado um html através da função `render` do módulo `htmlRenderer.js`. Para isso, é passado o template `book/templates/toc.tpl.html`.
