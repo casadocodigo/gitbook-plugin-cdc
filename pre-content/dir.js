@@ -18,7 +18,7 @@ function listFilesByName(dir, extension){
                 return a.localeCompare(b);
             });
             var files = sortedByName.map(function(file){
-                return dir + "/" + file;
+                return path.resolve(dir, file);
             });
             return d.resolve(files);  
         });
