@@ -15,6 +15,7 @@
     "kramed": "0.4.3"
   },
   "devDependencies": {
-    "mocha": "1.18.2"
+    "mocha": "1.18.2",
+    "proxyquire": "1.4.0"
   }
 }

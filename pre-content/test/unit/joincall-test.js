@@ -1,6 +1,10 @@
 var assert = require("assert");
+var proxyquire = require("proxyquire");
 
-var pdftk = require("./../../pdftk.js");
+var childProcessStub = {};
+var fsStub = {};
+
+var pdftk = proxyquire("./../../pdftk.js", {"child_process": childProcessStub, "fs": fsStub});
 
 describe('pdftk', function(){
 
@@ -9,10 +13,13 @@ describe('pdftk', function(){
         var pdfFile = "index.pdf";
         var files = ["toc.pdf"];
         var outputFile = "index-with-toc.pdf";
+
+        childProcessStub.exec = function(pdftkCall, fn) {
+            assert.equal('pdftk A="index.pdf" B="toc.pdf" cat A1 B A3-end output index-with-toc.pdf', pdftkCall);
+            fn();
+        };
         
-        var pdftkCall = pdftk.generatePdftkJoinCall(pdfFile, files, outputFile);
-        
-        assert.equal('pdftk A="index.pdf" B="toc.pdf" cat A1 B A3-end output index-with-toc.pdf', pdftkCall);
+        pdftk.join(pdfFile, files, outputFile).done();
     });
 
     it('should generate pdftk join call with extras', function(){
@@ -20,10 +27,14 @@ describe('pdftk', function(){
         var pdfFile = "index.pdf";
         var files = ["copyright.pdf", "ads.pdf", "toc.pdf"];
         var outputFile = "index-with-extras-and-toc.pdf";
+
+        childProcessStub.exec = function(pdftkCall, fn) {
+            assert.equal('pdftk A="index.pdf" B="copyright.pdf" C="ads.pdf" D="toc.pdf" cat A1 B C D A3-end output index-with-extras-and-toc.pdf', pdftkCall);
+            fn();
+        };
+
+        pdftk.join(pdfFile, files, outputFile).done();
         
-        var pdftkCall = pdftk.generatePdftkJoinCall(pdfFile, files, outputFile);
-        
-        assert.equal('pdftk A="index.pdf" B="copyright.pdf" C="ads.pdf" D="toc.pdf" cat A1 B C D A3-end output index-with-extras-and-toc.pdf', pdftkCall);
     });
 
     
@@ -33,9 +44,13 @@ describe('pdftk', function(){
         var files = ["copyright and ads.pdf"];
         var outputFile = "index-with-extras.pdf";
         
-        var pdftkCall = pdftk.generatePdftkJoinCall(pdfFile, files, outputFile);
+        childProcessStub.exec = function(pdftkCall, fn) {
+            assert.equal('pdftk A="index.pdf" B="copyright and ads.pdf" cat A1 B A3-end output index-with-extras.pdf', pdftkCall);
+            fn();
+        };
+
+        pdftk.join(pdfFile, files, outputFile).done();
         
-        assert.equal('pdftk A="index.pdf" B="copyright and ads.pdf" cat A1 B A3-end output index-with-extras.pdf', pdftkCall);
     });
 
 });

@@ -6,16 +6,6 @@ var pdftk = require("./../../pdftk.js");
 
 describe("pdftk", function(){
 
-    it('should get number of pages', function(done){
-        pdftk
-        .extractNumberOfPages(path.resolve('./index.pdf'))
-        .then(function(pN){
-            assert.equal(181, pN);
-            done();
-        });
-    });
-    
-
     it('should extract toc', function(done){
         pdftk
         .extractTOC(path.resolve('./index.pdf'))
@@ -35,6 +25,16 @@ describe("pdftk", function(){
             done();
         });
     });
+
+    it('should get number of pages', function(done){
+        pdftk
+        .extractNumberOfPagesFromFiles([path.resolve('./index.pdf')])
+        .then(function(pN){
+            assert.equal(181, pN);
+            done();
+        });
+    });
+    
 
     it('should extract added number of pages of multiple files', function(done){
         
