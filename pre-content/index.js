@@ -100,17 +100,17 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     var preContent = [];
     
     return Q().then(function () {
-        return dir.listFilesByName(extrasDir);
+        return dir.listFilesByName(extrasDir, ".pdf");
     }).then(function (extras) {
         extraFiles = extras;
     }).then(function () {
-        return dir.listFilesByName(inBookExtrasDir);
+        return dir.listFilesByName(inBookExtrasDir, ".pdf");
     }).then(function (extras) {
         extras.forEach(function(file){
             extraFiles.push(file);
         });
     }).then(function () {
-        return dir.listFilesByName(introDir);
+        return dir.listFilesByName(introDir, ".md");
     }).then(function (introMDs) {
         introMDs.forEach(function (file) {
             var pdfFile = file.replace(".md", ".pdf");
