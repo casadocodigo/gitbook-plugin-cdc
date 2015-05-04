@@ -3,66 +3,12 @@ var fs = require("fs");
 
 var Q = require("q");
 
-function extractNumberOfPages(pdfFile) {
-    console.log("pdftk - Preparing to extract number of pages...")
-    
-    var d = Q.defer();
-
-    return Q().then(function () {
-    
-        var pdftkCall = 'pdftk "' + pdfFile + '" dump_data';
-
-        console.log("pdftk - Calling pdftk...");
-        console.log(pdftkCall);
-
-        exec(pdftkCall, function (error, stdout, stderr) {
-            if (error) {
-                console.log("pdftk - Error while extracting number of pages. :/");
-                return d.reject(error);
-            }
-
-            var numberOfPages =
-                stdout
-                .split("\n")
-                .filter(function(line){
-                    return line.indexOf("NumberOfPages") == 0;
-                })[0].split(":")[1];
-
-            console.log("pdftk - Extracted number of pages! :)");
-            return d.resolve(parseInt(numberOfPages));
-        });
-        
-        return d.promise;
-
-    });
-}
-
-function extractNumberOfPagesFromFiles(files){
-    var d = Q.defer();
-
-    return Q().then(function () {
-    
-        var promises = [];
-        files.forEach(function(file){
-            promises.push(extractNumberOfPages(file));
-        });
-
-        Q.all(promises)
-        .spread(function(){
-            var sum = [].
-                        reduce
-                        .call(arguments, function(a, b) {
-                            return a + b;
-                        });
-            return d.resolve(sum);
-        }, function(error){
-            return d.reject(error);
-        });
-
-        return d.promise;
-
-    });
-}
+module.exports = {
+    extractTOC: extractTOC,
+    extractNumberOfPagesFromFiles: extractNumberOfPagesFromFiles,
+    join: join,
+    updateBookmarkInfo: updateBookmarkInfo
+};
 
 function extractTOC(pdfFile) {
     
@@ -141,6 +87,33 @@ function extractTOC(pdfFile) {
     });
 }
 
+function extractNumberOfPagesFromFiles(files){
+    var d = Q.defer();
+
+    return Q().then(function () {
+    
+        var promises = [];
+        files.forEach(function(file){
+            promises.push(extractNumberOfPages(file));
+        });
+
+        Q.all(promises)
+        .spread(function(){
+            var sum = [].
+                        reduce
+                        .call(arguments, function(a, b) {
+                            return a + b;
+                        });
+            return d.resolve(sum);
+        }, function(error){
+            return d.reject(error);
+        });
+
+        return d.promise;
+
+    });
+}
+
 function join(pdfFile, files, outputFile){
     console.log("pdftk - Preparing to join toc...");
     var d = Q.defer();
@@ -158,30 +131,6 @@ function join(pdfFile, files, outputFile){
         });
         return d.promise;
     });
-}
-
-function generatePdftkJoinCall(pdfFile, files, outputFile){
-    function filesRanges(files, action){
-        var ranges = "";
-        for(var i = 0, letter = "B".charCodeAt(0); i < files.length; i++, letter++){
-            ranges += action(letter, i);
-        }
-        return ranges;
-    }
-    function onlyLetter(letter, i){
-        return " " + String.fromCharCode(letter);
-    }
-    function letterAndFile(letter, i){
-        return onlyLetter(letter, i) + '="' + files[i] + '"';
-    }
-    
-    var pdftkCall = 'pdftk A="' + pdfFile + '"';
-    pdftkCall += filesRanges(files, letterAndFile) 
-    //TODO: descobrir o numero de paginas do toc original (considerando 1)
-    pdftkCall +=  ' cat A1';
-    pdftkCall += filesRanges(files, onlyLetter) 
-    pdftkCall += ' A3-end output ' + outputFile;
-    return pdftkCall;
 }
 
 function updateBookmarkInfo(inputFile, info, infoFile, outputFile){
@@ -206,6 +155,30 @@ function updateBookmarkInfo(inputFile, info, infoFile, outputFile){
             });
             return d.promise;
         });
+}
+
+function generatePdftkJoinCall(pdfFile, files, outputFile){
+    function filesRanges(files, action){
+        var ranges = "";
+        for(var i = 0, letter = "B".charCodeAt(0); i < files.length; i++, letter++){
+            ranges += action(letter, i);
+        }
+        return ranges;
+    }
+    function onlyLetter(letter, i){
+        return " " + String.fromCharCode(letter);
+    }
+    function letterAndFile(letter, i){
+        return onlyLetter(letter, i) + '="' + files[i] + '"';
+    }
+    
+    var pdftkCall = 'pdftk A="' + pdfFile + '"';
+    pdftkCall += filesRanges(files, letterAndFile) 
+    //TODO: descobrir o numero de paginas do toc original (considerando 1)
+    pdftkCall +=  ' cat A1';
+    pdftkCall += filesRanges(files, onlyLetter) 
+    pdftkCall += ' A3-end output ' + outputFile;
+    return pdftkCall;
 }
 
 function bookmarkInfo(info){
@@ -235,16 +208,40 @@ function bookmarkInfo(info){
     return pdfInfo;
 }
 
+function extractNumberOfPages(pdfFile) {
+    console.log("pdftk - Preparing to extract number of pages...")
+    
+    var d = Q.defer();
 
-module.exports = {
-    extractNumberOfPages: extractNumberOfPages,
-    extractNumberOfPagesFromFiles: extractNumberOfPagesFromFiles,
-    extractTOC: extractTOC,
-    join: join,
-    updateBookmarkInfo: updateBookmarkInfo,
-    bookmarkInfo: bookmarkInfo,
-    generatePdftkJoinCall: generatePdftkJoinCall
-};
+    return Q().then(function () {
+    
+        var pdftkCall = 'pdftk "' + pdfFile + '" dump_data';
+
+        console.log("pdftk - Calling pdftk...");
+        console.log(pdftkCall);
+
+        exec(pdftkCall, function (error, stdout, stderr) {
+            if (error) {
+                console.log("pdftk - Error while extracting number of pages. :/");
+                return d.reject(error);
+            }
+
+            var numberOfPages =
+                stdout
+                .split("\n")
+                .filter(function(line){
+                    return line.indexOf("NumberOfPages") == 0;
+                })[0].split(":")[1];
+
+            console.log("pdftk - Extracted number of pages! :)");
+            return d.resolve(parseInt(numberOfPages));
+        });
+        
+        return d.promise;
+
+    });
+}
+
 
 /*
 
