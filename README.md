@@ -4,7 +4,9 @@ Este plugin está organizado em dois sub-módulos:
 * **ebook**: manipula conteúdo do livro como nomes das seções, legenda de imagens, etc...
 * **pre-content**: insere conteúdo _no início_ do livro como copyright, propagandas, apresentação dos autores, etc...
 
+## Exemplo de Uso
 
+//TODO: exemplo de uso
 
 ## Código
 
@@ -26,7 +28,9 @@ ___
 ### [util.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/util.js)
 Contém as funções comuns:
 
-#### obtainExtension(options)
+#### obtainExtension
+Função que obtém a extensão do livro a ser gerado.
+
 Parâmetros:
 * options - `Object` com as configurações do `book.json` do gitbook.
 
@@ -37,14 +41,14 @@ Se não houver como descobrir a extensão do livro e o formato for _ebook_, é c
 
 Se o formato for _site_, o retorno é "", uma String vazia.
 
-#### obtainPdfOptions(options)
+#### obtainPdfOptions
+Função que retorna configurações do [ebook-convert do calibre](http://manual.calibre-ebook.com/cli/ebook-convert.html)  específicas para _pdf_.
+
 Parâmetros:
 * options - `Object` com as configurações do `book.json` do gitbook.
 
 Retorno:
 * um `Object` com opções do calibre para geração de PDF. 
-
-Contém [configurações do ebook-convert](http://manual.calibre-ebook.com/cli/ebook-convert.html) do calibre específicas para _pdf_.
 
 Algumas das opções são fixas, não podendo ser alteradas:
 * `--pdf-page-numbers`: setado para _null_, para desligar a inserção de número de páginas no pdf. Os números de página vem da opção _pdf.footerTemplate_ do _book.json_.
@@ -85,6 +89,8 @@ Dependências externas:
 * [cheerio](https://github.com/cheeriojs/cheerio), uma implementação enxuta do jQuery para Node.js.
 
 #### handlePage
+Função que manipula conteúdo da página renderizada.
+
 Parâmetros:
 * page - `Object` com as informações sobre a página que será renderizada.
 
@@ -100,6 +106,8 @@ Para cada `img` da página, é extraído do `alt` configurações de largura da 
 Todos os comentários html são removidos do livro.
 
 #### handlePageAfter
+Função que manipula conteúdo da página renderizada.
+
 Parâmetros:
 * page - `Object` com as informações sobre a página que será renderizada.
 
@@ -109,6 +117,8 @@ Retorno:
 Antes de cada `h1` que contém o título do capítulo, é inserido um `div` com o número do capítulo (ex.: _Capítulo 1_).
 
 #### handleEbookBefore
+Função que altera opções do [ebook-convert do calibre](http://manual.calibre-ebook.com/cli/ebook-convert.html)
+
 Parâmetros:
 * options - `Object` com configurações que vão ser passadas para o calibre.
 
@@ -151,15 +161,16 @@ Função associada ao hook de `finish` do gitbook, que é chamada no fim da gera
 Se a extensão do livro a ser gerado não for pdf, não faz nada.
 
 Agora, se for pdf, faz os seguintes passos:
-
 1. **cria sumário** utilizando a função `renderTocPDF`
-1. **adiciona conteúdo no antes do sumário** através da função `handlePreContent`
+1. **adiciona conteúdo antes do sumário** através da função `handlePreContent`
 1. **junta conteúdos em um pdf só** utilizando a função `join` do módulo `pdftk`, gerando o arquivo `index-with-pre-content.pdf`
 1. **atualiza indíce** do pdf usando a função `updateBookmarkInfo` do módulo `pdftk`, gerando o arquivo `index-with-pre-content-and-bookmarks.pdf`
 1. **atualiza informações de número das páginas** do pdf com a função `updatePageNumberInfo` do módulo `gs`, gerando o arquivo `index-with-pre-content-bookmarks-and-page-numbers.pdf`
 1. há um passo final, se o comando executado for `gitbook pdf`. Os arquivos intermediários são gerados no diretório `/tmp` e logo em seguida apagados. Por isso, copiamos o `/tmp/index-with-pre-content-bookmarks-and-page-numbers.pdf` para `/tmp/index.pdf`. O gitbook se encarrega de transformá-lo no arquivo, chamado `book.pdf`.
  
 #### renderTocPDF
+Função privada de `pre-content/index.js` que é responsável por gerar um pdf com o sumário, a partir do pdf original do gitbook/calibre.
+
 Parâmetros:
 * outputDir - `String` com o caminho do diretório de saída 
 * originalPDF - `String` com o caminho do pdf gerado pelo gitbook/calibre
@@ -168,11 +179,8 @@ Parâmetros:
 Retorno:
 * `String` com o caminho do pdf gerado que contém o sumário
 
-Função privada de `pre-content/index.js` que é responsável por gerar um pdf com o sumário, a partir do pdf original do gitbook/calibre.
-
 Os passos para gerar o pdf com o sumário são os seguintes:
-
-1. extrair do indíce do pdf original, através do função `extractTOC` do módulo `pdftk.js`,  um `Object` que representa com informações sobre os capítulos e seções com suas respectivas páginas.
+1. extrair do indíce do pdf original, através do função `extractTOC` do módulo `pdftk.js`,  um `Object` com capítulos e seções com suas respectivas páginas.
 2. atualizar as páginas do `Object` obtida no passo anterior, utilizando a função `update` do módulo `toc.js`, para que o primeiro capítulo comece na página 1. Nas informações extraídas pelo _pdftk_, o primeiro capítulo começa na página 3, porque é considerada a capa e uma página com o sumário original (e incompleto) gerado pelo gitbook.
 3. com o `Object` com as páginas atualizadas, é renderizado um html através da função `render` do módulo `htmlRenderer.js`. Para isso, é passado o template `book/templates/toc.tpl.html`.
 4. a `String` com o html renderizado no passo anterior é salva em um arquivo
@@ -182,3 +190,153 @@ Os passos para gerar o pdf com o sumário são os seguintes:
     * `--page-breaks-before` fica com `/` para desabilitar quebras de página.
 
 No fim desses passos, temos um pdf com o sumário do livro com capítulos e seções e as respectivas páginas.
+
+#### handlePreContent
+Função privada de `pre-content/index.js` responsável por gerar pdfs com todo o conteúdo que precede o primeiro capítulo: conteúdo fixo como pdfs com copyright e propagandas, conteúdo .md que precisa ser renderizado e o pdf do sumário.
+
+Parâmetros:
+* inputDir - `String` com o caminho do diretório de entrada
+* outputDir - `String` com o caminho do diretório de saída 
+* tocPDF - `String` com o caminho do pdf do sumário
+* pdfInfo - `Object` com informações do livro como autor, editora e título, além das opções para geração do pdf (que foram obtidas da função `obtainPdfOptions` de `util.js`)
+
+Retorno:
+* `Array` com todos os caminhos de pdfs que devem ser inseridos antes do primeiro capítulo
+
+Os passos para gerar o pdfs são os seguintes:
+
+1. obter todos os arquivos `.pdf` ordenados por nome do diretório apontado pela variável de ambiente `CDC_EXTRAS_DIR`, se presente
+2. verificar se existe um diretório `extras` no livro e obter todos os arquivos `.pdf` desse diretório ordenados por nome
+3. obter todos os arquivos `.md`, ordenados por nome, do diretório `intro`
+4. renderizar os `.md`, transformado-os em `.pdf`
+5. extrair a soma dos número de páginas de todos os `.pdf` encontrados no `CDC_EXTRAS_DIR`, no `extras` ou gerados a partir do `.md` de `intro`
+6. atualizar o objeto `pdfInfo` com um objeto `preContent` que tem a propriedade `numberOfPages` com a soma do número de páginas obtida anteriormente
+
+Após a execução da função, é retornado um array com os caminhos dos `.pdf` de `CDC_EXTRAS_DIR`, `extras` e `intro` (renderizados). Além disso, o objeto `pdfInfo` terá o número de páginas desses `.pdf`.
+
+### [pre-content/pdftk.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/pdftk.js)
+
+Contém código de invocação da ferramenta [pdftk](https://www.pdflabs.com/docs/pdftk-man-page/).
+
+Dependências externas: 
+* [Q](https://github.com/kriskowal/q), biblioteca de promises para Node.js.
+
+#### extractTOC
+Função que usa o pdftk para extrair o índice de um pdf. 
+
+Parâmetros:
+* pdfFile - `String` com o caminho de um pdf
+
+Retorno:
+* `Array` de `Object`s com informações dos capítulos (`title`, `pageNumber` e `sections`.
+
+É executado o comando `pdftk arquivo.pdf dump_data`. 
+
+Cada linha da resposta do comando anterior é lida, buscando a página através do `BookmarkPageNumber`, se é seção ou capítulo através do `BookmarkLevel` e o título através do `BookmarkTitle` .
+
+Então, é retornado um `Array` que contém objetos com as informações de cada capítulo. O retorno será algo como:
+```
+[
+{  title: "Capítulo 1", 
+    pageNumber: 1, 
+    sections: [ 
+        { title: "Seção 1.1", pageNumber: 1},
+        { title: "Seção 1.2", pageNumber: 3}
+    ] 
+}, 
+{  title: "Capítulo 2", 
+    pageNumber: 5, 
+    sections: [ 
+        { title: "Seção 2.1", pageNumber: 6}
+    ] 
+}
+]
+```
+
+Em [`pre-content/test/integration/pdftk-test.js`](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/test/integration/pdftk-test.js), há um teste de que executa a extração do índice em um pdf de exemplo.
+
+#### extractNumberOfPagesFromFiles
+Função que retorna a soma do número de páginas dos arquivos pdf passados como parâmetro, usando o pdftk.
+
+Parâmetros:
+* files - `Array` com o caminho de arquivos pdf
+
+Retorno:
+* `Number` com a soma do número de páginas dos pdfs.
+
+Para extrair o número de páginas, é executado o comando `pdftk arquivo.pdf dump_data` e lida a informação `NumberOfPages`.
+
+Como o comando `pdftk` é executado várias vezes, é criado um array de _promises_ e são utilizadas as funções [`all`](https://github.com/kriskowal/q/wiki/API-Reference#promiseall) e [`spread`](https://github.com/kriskowal/q/wiki/API-Reference#promisespreadonfulfilled-onrejected) da biblioteca `Q`, para gerenciar a execução das promises.
+
+Em [`pre-content/test/integration/pdftk-test.js`](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/test/integration/pdftk-test.js), há um teste de que executa a extração do número de páginas de pdfs de exemplo.
+
+#### join
+
+Função que mescla vários arquivos pdf usando o pdftk.
+
+Parâmetros:
+* pdfFile - `String` com o caminho de um pdf principal
+* files - `Array` com o caminho de arquivos pdf a serem inseridos no começo do pdf princial
+* outputFile - `String` com caminho do pdf de saída
+ 
+Os arquivos pdf no array `files` são colocados logo depois da página 1 do arquivo principal (que contém a capa do livro). Depois de todos os arquivos pdf extras, é inserido o conteúdo do pdf principal. 
+
+_Obs.: Na verdade, é retirada a página 2 do pdf principal, porque essa página contém um sumário incompleto que é gerado pelo gitbook._
+
+É utilizada o comando `cat` do pdftk. Um exemplo de chamada é o seguinte:
+```
+pdftk A="input.pdf" B="copyright.pdf" C="ads.pdf" D="toc.pdf" cat A1 B C D A3-end output out.pdf
+```
+
+Em [`pre-content/test/unit/joincall-test.js`](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/test/unit/joincall-test.js), há um teste de unidade com exemplos.
+
+
+#### updateBookmarkInfo
+
+Função que, dado um pdf de entrada e um objeto com as páginas iniciais e títulos dos capítulos e seções, gera um pdf de saída com as informações atualizadas.
+
+Parâmetros:
+* inputFile - `String` com o caminho do pdf de entrada
+* info - `Object` com informações atualizadas das páginas e títulos
+* infoFile - `String` com o caminho onde deve ser gravado o arquivo com informações do novo índice no formato do pdftk
+* outputFile - `String` com caminho do pdf de saída
+
+Vamos supor que invocamos essa função com o objeto `info`, conforme a seguir:
+```
+{
+    "toc":[
+        {
+        "title":"1 Introdu&#231;&#227;o",
+        "pageNumber":3,
+        "sections":[
+            {
+           "title":"1.1 Mantendo o hist&#243;rico do c&#243;digo",
+           "pageNumber":3
+            }
+        ]
+        }
+    ],
+    "preContent": { "numberOfPages": 9 }
+};
+```        
+
+Se o parâmetro `infoFile` for `info.txt`, esse arquivo será gerado com o seguinte conteúdo:
+```
+BookmarkBegin
+BookmarkTitle: 1 Introdu&#231;&#227;o
+BookmarkLevel: 1
+BookmarkPageNumber: 13
+BookmarkBegin
+BookmarkTitle: 1.1 Mantendo o hist&#243;rico do c&#243;digo
+BookmarkLevel: 2
+BookmarkPageNumber: 13
+```
+
+Então, é invocada a opção `update_info` do comando pdftk da seguinte maneira:
+```
+pdftk input.pdf update_info info.txt output output.pdf
+```
+
+Depois dessa invocação, o índice do `output.pdf` estará com as páginas atualizadas.
+
+Em [`pre-content/test/unit/info-test.js`](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/test/unit/info-test.js), há um teste de unidade com exemplos dos parâmetros e do tipo de arquivo que é gerado.
