@@ -38,6 +38,7 @@ function renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions){
         return Q.nfcall(fs.writeFile, htmlFile, html);
     }).then(function(){
         pdfOptions["--pdf-header-template"] = null;
+        pdfOptions["--pdf-footer-template"] = null;
         pdfOptions["--chapter"] = "/";
         pdfOptions["--page-breaks-before"] = "/";
         return calibre.generate(htmlFile, pdfFile, pdfOptions);
