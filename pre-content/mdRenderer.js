@@ -1,11 +1,28 @@
-var Q = require("q");
-
 var fs = require("fs");
 
+var Q = require("q");
 var kramed = require("kramed");
 
 var calibre = require("./calibre.js");
 var htmlRenderer = require("./htmlRenderer.js");
+
+function renderPdfs(files, template, pdfOptions){
+    return Q()
+        .then(function(){
+            var promises = [];
+            files.forEach(function(mdFile){
+                var htmlFile = mdFile.replace(".md", ".html");
+                var pdfFile = htmlFile.replace(".html", ".pdf");
+                promises.push(renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions));
+            });
+            return Q.all(promises);
+        });
+}
+
+module.exports = {
+    renderPdfs: renderPdfs
+}
+
     
 function renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions){
     return Q().then(function(){
@@ -26,20 +43,3 @@ function renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions){
         return calibre.generate(htmlFile, pdfFile, pdfOptions);
     });
 }    
-
-function renderPdfs(files, template, pdfOptions){
-    return Q()
-        .then(function(){
-            var promises = [];
-            files.forEach(function(mdFile){
-                var htmlFile = mdFile.replace(".md", ".html");
-                var pdfFile = htmlFile.replace(".html", ".pdf");
-                promises.push(renderPdf(mdFile, htmlFile, pdfFile, template, pdfOptions));
-            });
-            return Q.all(promises);
-        });
-}
-
-module.exports = {
-    renderPdfs: renderPdfs
-}

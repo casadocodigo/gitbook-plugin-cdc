@@ -10,9 +10,9 @@ var pdftk = require("./pdftk.js");
 var tocUpdater = require("./toc.js");
 var htmlRenderer = require("./htmlRenderer.js");
 var calibre = require("./calibre.js");
-var gs = require("./gs.js");
 var dir = require("./dir.js");
 var mdRenderer = require("./mdRenderer.js");
+var gs = require("./gs.js");
 
 module.exports = {
     "finish": finish

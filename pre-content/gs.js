@@ -3,7 +3,7 @@ var fs = require("fs");
 
 var Q = require("q");
 
-var NAO_MUDAR_IMAGENS = '-dColorConversionStrategy=/LeaveColorUnchanged -dEncodeColorImages=false -dEncodeGrayImages=false -dEncodeMonoImages=false '; //colocar para nao perder detalhes das imagens. problema: arquivo fica gigante!
+//var NAO_MUDAR_IMAGENS = '-dColorConversionStrategy=/LeaveColorUnchanged -dEncodeColorImages=false -dEncodeGrayImages=false -dEncodeMonoImages=false '; //colocar para nao perder detalhes das imagens. problema: arquivo fica gigante!
 
 function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile){
     console.log("gs - Preparing to update page number info...");
@@ -13,10 +13,11 @@ function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile){
                 return Q.nfcall(fs.writeFile, pageInfoFile, pageNumberInfo(pageInfo), { encoding: "ascii"});
             }).
             then(function(){
-            
                 var gsCall = 'gs -q -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
 
-                console.log("gs - Calling gs...")
+                console.log("gs - Calling gs...");
+                console.log(gsCall);
+        
                 exec(gsCall, function (error, stdout, stderr) {
                     if (error) {
                         console.log("gs - Error while updating page number info. :/");
@@ -28,6 +29,10 @@ function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile){
                 return d.promise;
             });
 }
+
+module.exports = {
+    updatePageNumberInfo: updatePageNumberInfo
+};
 
 function pageNumberInfo(info){
     var firstChapterPageNumber = info.preContent.numberOfPages + 1;
@@ -47,10 +52,6 @@ function pageNumberInfo(info){
     return pageInfo;
 }
 
-module.exports = {
-    updatePageNumberInfo: updatePageNumberInfo,
-    pageNumberInfo: pageNumberInfo
-};
 
 /*
 $ 

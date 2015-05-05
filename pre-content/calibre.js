@@ -26,6 +26,10 @@ function generate(inputFilename, outputFilename, options){
     });
 }
 
+module.exports = {
+    generate: generate
+};
+
 function calibreOptions(options){
     var calibreOptions = "";
     for(option in options){
@@ -40,7 +44,3 @@ function calibreOptions(options){
     }
     return calibreOptions;
 }
-
-module.exports = {
-    generate: generate
-};
