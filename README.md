@@ -32,31 +32,33 @@ Você vai precisar instalar:
 ### Configurando seu livro
 
 1. Configure o `package.json` do seu livro da seguinte maneira:
-``` json
-{
-"name": "livro",
-"version": "0.0.1",
-"description": "livro",
-"private": true,
-"dependencies": {
-    "gitbook-plugin-cdc": "casadocodigo/gitbook-plugin-cdc",
-    "gitbook-plugin-cdc-tema": "casadocodigo/gitbook-plugin-cdc-tema"
- }
-}
-```
-2. Execute `npm install` para baixar este plugin e as outras dependências.
-3. Configure  o arquivo `book.json` do seu livro, definindo `title`, `description`, `author` e `publisher`. Defina também em  `plugins`, o valores `cdc` e `cdc-tema`.
-``` json
-{
-	"title": "Título do Livro",
-	"description": "Descrição do Livro.",
-	"author": "Fulano Silva & Ciclano Souza",
-	"publisher": "Minha Editora",
-	"plugins": ["cdc", "cdc-tema"]
-}
-```
-Outras opções possíves estão definidas [abaixo](#mais-opções).
-4. Fizemos um [_patch_](https://raw.githubusercontent.com/alexandreaquiles/gitbook/32c941569e547045a13bd6c2835737b1cd2a6a8c/lib/generate/ebook/index.js) para adicionar algumas funcionalidades no Gitbook que não podem ser feitas com plugins. Substitua o arquivo `/usr/local/lib/node_modules/gitbook/lib/generate/ebook/index.js`, pelo [conteúdo do patch](https://raw.githubusercontent.com/alexandreaquiles/gitbook/32c941569e547045a13bd6c2835737b1cd2a6a8c/lib/generate/ebook/index.js).
+
+	``` json
+	{
+	"name": "livro",
+	"version": "0.0.1",
+	"description": "livro",
+	"private": true,
+	"dependencies": {
+	    "gitbook-plugin-cdc": "casadocodigo/gitbook-plugin-cdc",
+	    "gitbook-plugin-cdc-tema": "casadocodigo/gitbook-plugin-cdc-tema"
+	 }
+	}
+	```
+1. Execute `npm install` para baixar este plugin e as outras dependências.
+1. Configure  o arquivo `book.json` do seu livro, definindo `title`, `description`, `author` e `publisher`. Defina também em  `plugins`, o valores `cdc` e `cdc-tema`.
+
+	``` json
+	{
+		"title": "Título do Livro",
+		"description": "Descrição do Livro.",
+		"author": "Fulano Silva & Ciclano Souza",
+		"publisher": "Minha Editora",
+		"plugins": ["cdc", "cdc-tema"]
+	}
+	```
+	Outras opções possíves estão definidas [abaixo](#mais-opções).
+1. Fizemos um [_patch_](https://raw.githubusercontent.com/alexandreaquiles/gitbook/32c941569e547045a13bd6c2835737b1cd2a6a8c/lib/generate/ebook/index.js) para adicionar algumas funcionalidades no Gitbook que não podem ser feitas com plugins. Substitua o arquivo `/usr/local/lib/node_modules/gitbook/lib/generate/ebook/index.js`, pelo [conteúdo do patch](https://raw.githubusercontent.com/alexandreaquiles/gitbook/32c941569e547045a13bd6c2835737b1cd2a6a8c/lib/generate/ebook/index.js).
 
 ## Gerando livros
 Pronto! Agora podemos gerar o nosso livro. Temos algumas opções:
