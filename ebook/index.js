@@ -84,8 +84,6 @@ function handleEbookBefore(options) {
         options["--paper-size"] = pdfOptions["--paper-size"];
         options["--custom-size"] = pdfOptions["--custom-size"];
         options["--unit"] = pdfOptions["--unit"];
-        options["--pdf-default-font-size"] = pdfOptions["--pdf-default-font-size"];
-        options["--pdf-mono-font-size"] = pdfOptions["--pdf-mono-font-size"];
         options["--pdf-header-template"] = pdfOptions["--pdf-header-template"];
         options["--pdf-footer-template"] = pdfOptions["--pdf-footer-template"];
     }
