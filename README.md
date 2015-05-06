@@ -57,7 +57,7 @@ Você vai precisar instalar:
 		"plugins": ["cdc", "cdc-tema"]
 	}
 	```
-	Outras opções possíves estão definidas [abaixo](#mais-opções).
+	Outras opções possíveis estão definidas [abaixo](#mais-opções).
 1. Fizemos um [_patch_](https://raw.githubusercontent.com/alexandreaquiles/gitbook/32c941569e547045a13bd6c2835737b1cd2a6a8c/lib/generate/ebook/index.js) para adicionar algumas funcionalidades no Gitbook que não podem ser feitas com plugins. Substitua o arquivo `/usr/local/lib/node_modules/gitbook/lib/generate/ebook/index.js`, pelo [conteúdo do patch](https://raw.githubusercontent.com/alexandreaquiles/gitbook/32c941569e547045a13bd6c2835737b1cd2a6a8c/lib/generate/ebook/index.js).
 
 ## Gerando livros
@@ -194,18 +194,18 @@ Algumas opções tem valores padrão, mas podem ser alteradas através do `book.
 ```
 O template acima mostra o nome da editora à esquerda  e o nome da seção da página atual à direita nas páginas ímpares e o inverso nas páginas pares.
 
-    São utilizados recursos do Calibre, como a variável `_SECTION_`, que contém a seção atual, e as classes css `odd_page` e `even_page`, que ficam visíves apenas em páginas ímpares e pares, respectivamente.
+    São utilizados recursos do Calibre, como a variável `_SECTION_`, que contém a seção atual, e as classes css `odd_page` e `even_page`, que ficam visíveis apenas em páginas ímpares e pares, respectivamente.
     
     O trecho `{{PUBLISHER}}` é trocado pelo valor da propriedade `publisher` no arquivo `book.json` ou _Casa do Código_, se não estiver definida.
 * `--pdf-footer-template`: define um template html para o rodapé de cada página. O valor padrão é:
 ``` html
 <p id='ebook-footer'></p><script>var footer = document.getElementById('ebook-footer'); footer.innerHTML = _PAGENUM_ - 2; if(_PAGENUM_ % 2 != 0){ footer.style.textAlign = 'right'; }</script>
 ```
-O template acima mostra o número das páginas, alternando o alinhamento entre esqueda e direita.
-    É utilizada a variável `_PAGE_NUM` do Calibre, que contém a página atual. São descontadas 2 páginas: uma para capa e outra para o sumário imcompleto gerado pelo Gitbook (que é substituído depois).
+O template acima mostra o número das páginas, alternando o alinhamento entre esquerda e direita.
+    É utilizada a variável `_PAGE_NUM` do Calibre, que contém a página atual. São descontadas 2 páginas: uma para capa e outra para o sumário incompleto gerado pelo Gitbook (que é substituído depois).
 
 
-Para sobreescrever as opções anteriores, [modifique o `book.json`](#mais-opções).
+Para sobre-escrever as opções anteriores, [modifique o `book.json`](#mais-opções).
 
 ___
 
@@ -293,7 +293,7 @@ Agora, se for pdf, faz os seguintes passos:
 1. **cria sumário** utilizando a função `renderTocPDF`
 1. **adiciona conteúdo antes do sumário** através da função `handlePreContent`
 1. **junta conteúdos em um pdf só** utilizando a função `join` do módulo `pdftk`, gerando o arquivo `index-with-pre-content.pdf`
-1. **atualiza indíce** do pdf usando a função `updateBookmarkInfo` do módulo `pdftk`, gerando o arquivo `index-with-pre-content-and-bookmarks.pdf`
+1. **atualiza índice** do pdf usando a função `updateBookmarkInfo` do módulo `pdftk`, gerando o arquivo `index-with-pre-content-and-bookmarks.pdf`
 1. **atualiza informações de número das páginas** do pdf com a função `updatePageNumberInfo` do módulo `gs`, gerando o arquivo `index-with-pre-content-bookmarks-and-page-numbers.pdf`
 1. há um passo final, se o comando executado for `gitbook pdf`. Os arquivos intermediários são gerados no diretório `/tmp` e logo em seguida apagados. Por isso, copiamos o `/tmp/index-with-pre-content-bookmarks-and-page-numbers.pdf` para `/tmp/index.pdf`. O gitbook se encarrega de transformá-lo no arquivo, chamado `book.pdf`.
  
@@ -310,7 +310,7 @@ Retorno:
 
 Os passos para gerar o pdf com o sumário são os seguintes:
 
-1. extrair do indíce do pdf original, através do função `extractTOC` do módulo `pdftk.js`,  um `Object` com capítulos e seções com suas respectivas páginas.
+1. extrair do índice do pdf original, através do função `extractTOC` do módulo `pdftk.js`,  um `Object` com capítulos e seções com suas respectivas páginas.
 2. atualizar as páginas do `Object` obtida no passo anterior, utilizando a função `update` do módulo `toc.js`, para que o primeiro capítulo comece na página 1. Nas informações extraídas pelo _pdftk_, o primeiro capítulo começa na página 3, porque é considerada a capa e uma página com o sumário original (e incompleto) gerado pelo gitbook.
 3. com o `Object` com as páginas atualizadas, é renderizado um html através da função `render` do módulo `htmlRenderer.js`. Para isso, é passado o template `book/templates/toc.tpl.html`.
 4. a `String` com o html renderizado no passo anterior é salva em um arquivo
@@ -406,7 +406,7 @@ Função que mescla vários arquivos pdf usando o pdftk.
 
 Parâmetros:
 * pdfFile - `String` com o caminho de um pdf principal
-* files - `Array` com o caminho de arquivos pdf a serem inseridos no começo do pdf princial
+* files - `Array` com o caminho de arquivos pdf a serem inseridos no começo do pdf principal
 * outputFile - `String` com caminho do pdf de saída
  
 Os arquivos pdf no array `files` são colocados logo depois da página 1 do arquivo principal (que contém a capa do livro). Depois de todos os arquivos pdf extras, é inserido o conteúdo do pdf principal. 
