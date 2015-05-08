@@ -129,6 +129,30 @@ Tanto para o `headerTemplate` como para o `footerTemplate`, podem ser usadas as 
 * `_TITLE_`, que contém o título do livro
 * `_AUTHOR_`, que contém o nome do autor
 
+## Inserindo conteúdo antes do sumário
+
+Existem alguns conteúdos que não fazem parte do texto do livro em si.
+
+Alguns são conteúdos estáticos como copyright e propagandas.
+
+Outros são conteúdos dinâmicos como prefácio, apresentação dos autores e agradecimentos. Estes conteúdos são parte do livro, mas vem antes do sumário.
+
+### Conteúdo estático antes do sumário
+
+Conteúdos estáticos como copyright e propagandas, que são sempre iguais para todos os livros, devem ser colocados em arquivos `.pdf` no diretório configurado pela variável de ambiente `EXTRAS_DIR`.
+
+Os `.pdf` de `EXTRAS_DIR` serão ordenados por nome e inseridos logo depois da capa do livro.
+
+Também é possível definir arquivos `.pdf` dentro do diretório do livro, no sub-diretório `extras`. Se o `EXTRAS_DIR` já estiver configurado, os `.pdf` de `extras` virão logo depois.
+
+### Conteúdo dinâmico antes do sumário
+
+Conteúdos do livro como prefácio, apresentação dos autores e agradecimentos devem ser colocados em arquivos `.md` dentro do diretório `intro`.
+
+Ao gerar um `pdf`, cada arquivo `.md` do diretório `intro` será transformado em um `.pdf` e inserido logo antes do sumário (mas depois dos extras). 
+
+Os `.md` serão ordenados pelo nome do arquivo antes de serem renderizados e inseridos.
+
 ## Código
 
 Este plugin está organizado em dois sub-módulos:
