@@ -359,14 +359,14 @@ Retorno:
 
 Os passos para gerar o pdfs são os seguintes:
 
-1. obter todos os arquivos `.pdf` ordenados por nome do diretório apontado pela variável de ambiente `CDC_EXTRAS_DIR`, se presente
+1. obter todos os arquivos `.pdf` ordenados por nome do diretório apontado pela variável de ambiente `EXTRAS_DIR`, se presente
 2. verificar se existe um diretório `extras` no livro e obter todos os arquivos `.pdf` desse diretório ordenados por nome
 3. obter todos os arquivos `.md`, ordenados por nome, do diretório `intro`
 4. renderizar os `.md`, transformado-os em `.pdf`
-5. extrair a soma dos número de páginas de todos os `.pdf` encontrados no `CDC_EXTRAS_DIR`, no `extras` ou gerados a partir do `.md` de `intro`
+5. extrair a soma dos número de páginas de todos os `.pdf` encontrados no `EXTRAS_DIR`, no `extras` ou gerados a partir do `.md` de `intro`
 6. atualizar o objeto `pdfInfo` com um objeto `preContent` que tem a propriedade `numberOfPages` com a soma do número de páginas obtida anteriormente
 
-Após a execução da função, é retornado um array com os caminhos dos `.pdf` de `CDC_EXTRAS_DIR`, `extras` e `intro` (renderizados). Além disso, o objeto `pdfInfo` terá o número de páginas desses `.pdf`.
+Após a execução da função, é retornado um array com os caminhos dos `.pdf` de `EXTRAS_DIR`, `extras` e `intro` (renderizados). Além disso, o objeto `pdfInfo` terá o número de páginas desses `.pdf`.
 
 ### [pre-content/pdftk.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/pdftk.js)
 

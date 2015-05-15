@@ -91,7 +91,7 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
 }
 
 function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
-    var extrasDir = process.env.CDC_EXTRAS_DIR || '';
+    var extrasDir = process.env.EXTRAS_DIR || '';
     var inBookExtrasDir = path.join(inputDir, 'extras');
     var introDir = path.join(outputDir, "intro");
 
