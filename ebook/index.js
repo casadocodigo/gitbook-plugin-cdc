@@ -76,16 +76,12 @@ function handleEbookBefore(options) {
     }
 
     if (extension === "pdf") {
-        var pdfOptions = util.obtainPdfOptions(this.options);
-
         //só pra PDF
-        options["--pdf-page-numbers"] = pdfOptions["--pdf-page-numbers"];
-        options["--disable-font-rescaling"] = pdfOptions["--disable-font-rescaling"];
-        options["--paper-size"] = pdfOptions["--paper-size"];
-        options["--custom-size"] = pdfOptions["--custom-size"];
-        options["--unit"] = pdfOptions["--unit"];
-        options["--pdf-header-template"] = pdfOptions["--pdf-header-template"];
-        options["--pdf-footer-template"] = pdfOptions["--pdf-footer-template"];
+        options["--pdf-page-numbers"] = null;
+        options["--disable-font-rescaling"] = true;
+        options["--paper-size"] = null;
+        options["--custom-size"] = this.options.pdf.customSize;
+        options["--unit"] = "millimeter";
     }
 
     return options;
