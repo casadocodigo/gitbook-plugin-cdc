@@ -325,7 +325,7 @@ Os passos para gerar o pdf com o sumário são os seguintes:
     * `--pdf-default-font-size` é obtido de `pdf.fontSize` do `book.json`
     * `--pdf-mono-font-size` é obtido de `pdf.fontSize` do `book.json`
     * `--pdf-header-template` é obtido de `pdf.summary.headerTemplate` do `book.json`
-    * `--pdf-footer-template` é obtido de `pdf.summary.footerTemplat` do `book.json`
+    * `--pdf-footer-template` é obtido de `pdf.summary.footerTemplate` do `book.json`
 
 No fim desses passos, temos um pdf com o sumário do livro com capítulos e seções e as respectivas páginas.
 
