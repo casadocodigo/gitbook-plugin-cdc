@@ -117,7 +117,11 @@ Para ver os arquivos intermediários, você pode utilizar os comandos abaixo.
 	"customSize": "210x280", //String no formato largura x altura
 	"fontSize": 11 //Number
 	"headerTemplate": "<p>_SECTION_</p>", //String com um template html para o cabeçalho de cada página 
-	"footerTemplate": "<p>_PAGENUM_</p>" //String com um template html para o rodapé de cada página  
+	"footerTemplate": "<p>_PAGENUM_</p>", //String com um template html para o rodapé de cada página  
+	"summary": {
+		"headerTemplate": "<p>Sumário</p>", //String com template do cabeçalho do sumário
+		"footerTemplate": "<p>Casa do Código</p>" //String com template do rodapé do sumário
+	}
 }
 ```
 
