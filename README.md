@@ -121,13 +121,18 @@ Para ver os arquivos intermediários, você pode utilizar os comandos abaixo.
 }
 ```
 
-Os valores padrão da opções anteriores estão descritos [mais adiante](#obtainpdfoptions).
-
 Tanto para o `headerTemplate` como para o `footerTemplate`, podem ser usadas as seguintes variáveis:
 * `_PAGENUM_`, que contém o número da página atual
 * `_SECTION`, que contém o nome da seção atual
 * `_TITLE_`, que contém o título do livro
 * `_AUTHOR_`, que contém o nome do autor
+
+Os valores padrão das propriedades são os seguintes:
+* `pdf.fontSize`: tamanho do texto. O padrão, definido pelo Gitbook, é 12.
+* `pdf.margin.left`:  define a margem esquerda do pdf em pts. O padrão, definido pelo Gitbook, é 62.
+* `pdf.margin.right`: define a margem direita do pdf em pts. O padrão, definido pelo Gitbook, é 62.
+* `pdf.margin.top`: define a margem de cima do pdf em pts. O padrão, definido pelo Gitbook, é 36.
+* `pdf.margin.bottom`: define a margem de baixo do pdf em pts. O padrão, definido pelo Gitbook, é 36.
 
 ## Inserindo conteúdo antes do sumário
 
@@ -188,48 +193,6 @@ Retorno:
 Se não houver como descobrir a extensão do livro e o formato for _ebook_, é considerado o "pdf".
 
 Se o formato for _site_, o retorno é "", uma String vazia.
-
-#### obtainPdfOptions
-Função que retorna configurações do [ebook-convert do calibre](http://manual.calibre-ebook.com/cli/ebook-convert.html)  específicas para _pdf_.
-
-Parâmetros:
-* options - `Object` com as configurações do `book.json` do gitbook.
-
-Retorno:
-* um `Object` com opções do calibre para geração de PDF. 
-
-Algumas das opções são fixas, não podendo ser alteradas:
-* `--pdf-page-numbers`: setado para _null_, para desligar a inserção de número de páginas no pdf. Os números de página é inserido pela opção  `--pdf-footer-template`.
-* `--disable-font-rescaling`: setado para _true_, fazendo com que o calibre não altere os tamanhos das fontes.
-* `--paper-size`: setado para _null_, porque o tamanho do papel será definido com a opção _--custom-size_.
-* `--unit`: setado para _millimeter_, define a unidade utilizada na opção _--custom-size_.
-
-Algumas opções tem valores padrão, mas podem ser alteradas através do `book.json`.
-* `--custom-size`: tamanho do pdf, em milímetros, no formato largura x altura. O padrão é "155x230".
-* `--pdf-default-font-size`: tamanho de texto comum. O padrão, definido pelo Gitbook, é 12.
-* `--pdf-mono-font-size`: tamanho de código. O padrão, definido pelo Gitbook, é 12.
-* `--margin-left`:  define a margem esquerda do pdf em pts. O padrão, definido pelo Gitbook, é 62.
-* `--margin-right`: define a margem direita do pdf em pts. O padrão, definido pelo Gitbook, é 62.
-* `--margin-top`: define a margem de cima do pdf em pts. O padrão, definido pelo Gitbook, é 36.
-* `--margin-bottom`: define a margem de baixo do pdf em pts. O padrão, definido pelo Gitbook, é 36.
-* `--pdf-header-template`: define um template html para o cabeçalho de cada página. O valor padrão é: 
-``` html
-<p id='ebook-header' style='border-bottom: 1px solid black; margin-top: 36pt;'><span class='odd_page'><span>{{PUBLISHER}}</span><span style='float:right'>_SECTION_</span></span><span class='even_page'><span>_SECTION_</span><span style='float:right'>{{PUBLISHER}}</span></span><script>if(!(/^[0-9]/.test('_SECTION_'))) { document.getElementById('ebook-header').style.display='none'; }</script></p>
-```
-O template acima mostra o nome da editora à esquerda  e o nome da seção da página atual à direita nas páginas ímpares e o inverso nas páginas pares.
-
-    São utilizados recursos do Calibre, como a variável `_SECTION_`, que contém a seção atual, e as classes css `odd_page` e `even_page`, que ficam visíveis apenas em páginas ímpares e pares, respectivamente.
-    
-    O trecho `{{PUBLISHER}}` é trocado pelo valor da propriedade `publisher` no arquivo `book.json` ou _Casa do Código_, se não estiver definida.
-* `--pdf-footer-template`: define um template html para o rodapé de cada página. O valor padrão é:
-``` html
-<p id='ebook-footer'></p><script>var footer = document.getElementById('ebook-footer'); footer.innerHTML = _PAGENUM_ - 2; if(_PAGENUM_ % 2 != 0){ footer.style.textAlign = 'right'; }</script>
-```
-O template acima mostra o número das páginas, alternando o alinhamento entre esquerda e direita.
-    É utilizada a variável `_PAGE_NUM` do Calibre, que contém a página atual. São descontadas 2 páginas: uma para capa e outra para o sumário incompleto gerado pelo Gitbook (que é substituído depois).
-
-
-Para sobre-escrever as opções anteriores, [modifique o `book.json`](#mais-opções).
 
 ___
 
@@ -293,7 +256,12 @@ Se a extensão do livro a ser gerado for `mobi`, são configuradas as seguintes 
 * `--mobi-keep-original-images`: setada para `true`, fazendo com que o calibre não comprima as imagens
 * `--toc-title`: modificado para _Sumário_
 
-Se a extensão do livro a ser gerado for `pdf`, são configuradas as opções obtidas a partir da função _obtainPdfOptions_ do _util.js_. Veja acima.
+Se a extensão do livro a ser gerado for `pdf`, são configuradas também as seguintes opções:
+* `--pdf-page-numbers`: setado para _null_
+* `--disable-font-rescaling`: setado para _true_
+* `--paper-size`: setado para _null_
+* `--custom-size`: utilizado o valor da propriedade `pdf.customSize` do `book.json`
+* `--unit`: setada para _millimeter_
 
 
 ___
@@ -327,7 +295,7 @@ Função privada de `pre-content/index.js` que é responsável por gerar um pdf 
 Parâmetros:
 * outputDir - `String` com o caminho do diretório de saída 
 * originalPDF - `String` com o caminho do pdf gerado pelo gitbook/calibre
-* pdfInfo - `Object` com informações do livro como autor, editora e título, além das opções para geração do pdf (que foram obtidas da função `obtainPdfOptions` de `util.js`)
+* pdfInfo - `Object` com informações do livro como autor, editora e título, além das opções do gitbook.
 
 Retorno:
 * `String` com o caminho do pdf gerado que contém o sumário
@@ -338,10 +306,22 @@ Os passos para gerar o pdf com o sumário são os seguintes:
 2. atualizar as páginas do `Object` obtida no passo anterior, utilizando a função `update` do módulo `toc.js`, para que o primeiro capítulo comece na página 1. Nas informações extraídas pelo _pdftk_, o primeiro capítulo começa na página 3, porque é considerada a capa e uma página com o sumário original (e incompleto) gerado pelo gitbook.
 3. com o `Object` com as páginas atualizadas, é renderizado um html através da função `render` do módulo `htmlRenderer.js`. Para isso, é passado o template `book/templates/toc.tpl.html`.
 4. a `String` com o html renderizado no passo anterior é salva em um arquivo
-5. para gerar um pdf com o sumário é chamada a função `generate` do módulo `calibre` passando o caminho do arquivo html, o caminho onde o arquivo pdf deve ser gerado e opções para geração do pdf. As opções do calibre vem do objeto `pdfInfo`. Algumas opções são modificadas:
-    * `--pdf-header-template` fica com o título fixo (_Sumário_),
-    * `--chapter` fica com `/` para desligar a detecção de capítulos e
+5. para gerar um pdf com o sumário é chamada a função `generate` do módulo `calibre` passando o caminho do arquivo html, o caminho onde o arquivo pdf deve ser gerado e opções para geração do pdf. As opções do calibre vem do objeto `pdfInfo`, que são obtidas do `book.json`. São definidas as seguintes opções:
+    * `--pdf-page-numbers` fica como `null` porque será usado o `--pdf-footer-template`
+    * `--disable-font-rescaling` fica como `true` para desabilitar mudança nas fontes
+    * `--paper-size` fica com `null` porque será usado o `--custom-size`
+    * `--unit` fica com `millimeter`
+    * `--chapter` fica com `/` para desligar a detecção de capítulos
     * `--page-breaks-before` fica com `/` para desabilitar quebras de página.
+    * `--custom-size` é obtido de `pdf.customSize` do `book.json`
+    * `--margin-left` é obtido de `pdf.margin.left` do `book.json`
+    * `--margin-right` é obtido de `pdf.margin.right` do `book.json`
+    * `--margin-top` é obtido de `pdf.margin.top` do `book.json`
+    * `--margin-bottom` é obtido de `pdf.margin.bottom` do `book.json`
+    * `--pdf-default-font-size` é obtido de `pdf.fontSize` do `book.json`
+    * `--pdf-mono-font-size` é obtido de `pdf.fontSize` do `book.json`
+    * `--pdf-header-template` é obtido de `pdf.summary.headerTemplate` do `book.json`
+    * `--pdf-footer-template` é obtido de `pdf.summary.footerTemplat` do `book.json`
 
 No fim desses passos, temos um pdf com o sumário do livro com capítulos e seções e as respectivas páginas.
 
@@ -352,7 +332,7 @@ Parâmetros:
 * inputDir - `String` com o caminho do diretório de entrada
 * outputDir - `String` com o caminho do diretório de saída 
 * tocPDF - `String` com o caminho do pdf do sumário
-* pdfInfo - `Object` com informações do livro como autor, editora e título, além das opções para geração do pdf (que foram obtidas da função `obtainPdfOptions` de `util.js`)
+* pdfInfo - `Object` com informações do livro como autor, editora e título, além das opções do gitbook.
 
 Retorno:
 * `Array` com todos os caminhos de pdfs que devem ser inseridos antes do primeiro capítulo
@@ -542,8 +522,6 @@ Parâmetros:
 * outputFilename - `String` com o caminho do pdf de saída
 * options - `Object` com opções do `ebook-convert`
 
-Veja exemplos das opções do `ebook-convert` em [obtainPdfOptions](#obtainpdfoptions) do módulo util.js.
-
 É gerada um chamada do tipo:
 ```
 ebook-convert input.html output.pdf --disable-font-rescaling --chapter="/" --page-breaks-before="/" 
@@ -589,7 +567,23 @@ Para cada arquivo .md do parâmetro `files`, são feitos os seguintes passos:
 1. renderizar um html a partir do md utilizando a biblioteca `kramed`
 2. é utilizada a função [`render`](#render) do módulo `htmlRenderer.js` passando o parâmetro `template`, para melhorar o html gerado no passo anterior.
 3. é criado um arquivo com o conteúdo html com o mesmo nome do md, só que com extensão `.html`
-4. é utilizada a função [`generate`](#generate) do módulo `calibre.js` para gerar um pdf a partir do arquivo html. Não é utilizado um cabeçalho nem a detecção de capítulos: `--pdf-header-template` fica _null_, `--chapter` e `--page-break-before` ficam como _/_.
+4. é utilizada a função [`generate`](#generate) do módulo `calibre.js` para gerar um pdf a partir do arquivo html. São utilizadas as seguintes opções:
+    * `--pdf-page-numbers` fica como `null` porque será usado o `--pdf-footer-template`
+    * `--disable-font-rescaling` fica como `true` para desabilitar mudança nas fontes
+    * `--paper-size` fica com `null` porque será usado o `--custom-size`
+    * `--unit` fica com `millimeter`
+    * `--chapter` fica com `/` para desligar a detecção de capítulos
+    * `--page-breaks-before` fica com `/` para desabilitar quebras de página.
+    * `--custom-size` é obtido de `pdf.customSize` do `book.json`
+    * `--margin-left` é obtido de `pdf.margin.left` do `book.json`
+    * `--margin-right` é obtido de `pdf.margin.right` do `book.json`
+    * `--margin-top` é obtido de `pdf.margin.top` do `book.json`
+    * `--margin-bottom` é obtido de `pdf.margin.bottom` do `book.json`
+    * `--pdf-default-font-size` é obtido de `pdf.fontSize` do `book.json`
+    * `--pdf-mono-font-size` é obtido de `pdf.fontSize` do `book.json`
+    * `--pdf-header-template` fica como _null_, para não ter cabeçalho
+    * `--pdf-footer-template` fica como _null_, para não ter rodapé
+
 
 ### [pre-content/gs.js](https://github.com/casadocodigo/gitbook-plugin-cdc/blob/master/pre-content/gs.js)
 
