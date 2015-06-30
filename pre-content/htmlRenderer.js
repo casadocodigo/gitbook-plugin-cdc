@@ -10,7 +10,7 @@ function render(content, templateLocation){
         .then(function(){
         
         console.log("htmlRenderer - Rendering html...");
-        
+        swig.setDefaults({ locals: { version: function () { return new Date(); }}});
         swig.compileFile(templateLocation, {autoescape: false}, function(error, template){
             if(error){
                 console.log("htmlRenderer - Error rendering html. :/")

@@ -1,5 +1,8 @@
 <html>
    <style>
+       ul, li {
+         font-family: 'MinionPro', 'Minion Pro';
+       }
        ul { 
            list-style-type: none; 
        }
@@ -7,6 +10,7 @@
            margin-top: 110px!important;
            margin-bottom: 70px!important;
            font-size: 3em;
+           font-family: 'MinionPro', 'Minion Pro';
        }
        .chapter-toc {
            padding-left: 0;
@@ -39,7 +43,7 @@
             <ul class="chapter-toc">
             {% for chapter in chapters %}
                 <li>
-                    <span class="chapter-name-toc">{{ chapter.title }}</span><span class="chapter-page-toc">{{ chapter.pageNumber }}</span>
+                    <span class="chapter-name-toc">{{ chapter.title }}</span><span class="chapter-page-toc"></span>
                     <ul class="section-toc">
                         {% for section in chapter.sections %}
                             <li>
@@ -50,6 +54,7 @@
                 </li>
             {% endfor %}
             </ul>
+            <span class="version">Versão: {{ version()|date('y.d.d.m') }}</span>
        </div>
     </body>
 </html>
