@@ -26,6 +26,10 @@ function renderIntro(options){
         options.intro = [];
     
         var introDir = path.join(options.input, "intro");
+        if(!fs.existsSync(introDir)){
+            return;
+        }
+
         var files = fs.readdirSync(introDir);
         var filtered = files.filter(function(file){
             return path.extname(file) === ".md";
