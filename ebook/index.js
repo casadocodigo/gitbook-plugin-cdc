@@ -1,6 +1,9 @@
 var path = require("path");
+var fs = require("fs");
 
 var cheerio = require("cheerio");
+var kramed = require("kramed");
+var swig = require("swig");
 
 var util = require("./../util.js");
 
@@ -16,20 +19,48 @@ module.exports = {
     "handleEbookBefore": handleEbookBefore
 };
 
-function handlePage(page) {
-	verifyChapterTitle(page);
+function renderIntro(options){
+        if(options.intro){ //so roda uma vez
+            return;
+        }
+        options.intro = [];
+    
+        var introDir = path.join(options.input, "intro");
+        var files = fs.readdirSync(introDir);
+        var filtered = files.filter(function(file){
+            return path.extname(file) === ".md";
+        });
+        var sortedByName = filtered.sort(function (a, b) {
+            return a.localeCompare(b);
+        });
+        var mdFiles = sortedByName.map(function(file){
+            return path.resolve(introDir, file);
+        });
+        var templateLocation = path.resolve(__dirname , 'templates/intro.tpl.html');
+        mdFiles.forEach(function(mdFile){
+                var mdData = fs.readFileSync(mdFile);
+                var htmlSnippet = kramed(mdData.toString());
+                var tpl = swig.compileFile(templateLocation,{autoescape: false});
+                var html = tpl({ content: htmlSnippet});
+                options.intro.push({content: html});
+        });
+}
 
+function handlePage(page) {
     var format = this.options.format;
     var extension = util.obtainExtension(this.options);
 
-    var chapterNumber = obtainChapterNumber(page);
+    var chapter = page.progress.current;
+    verifyChapterTitle(chapter);
+
+    var summary = this.options.summary;
     page.sections.forEach(function (section) {
         if (section.type === "normal") {
             var $ = cheerio.load(section.content);
-            addSectionNumbers($, chapterNumber, section);
+            addSectionNumbers($, chapter, summary, section);
             //só ajustar imagens para ebook
             if (format === "ebook") {
-                adjustImages($, chapterNumber, section, extension);
+                adjustImages($, chapter, section, extension);
             }
             removeComments($, section);
         }
@@ -39,6 +70,8 @@ function handlePage(page) {
 }
 
 function handlePageAfter(page) {
+    renderIntro(this.options);    
+
     //inserindo numero do capitulo
     //tem que fazer no page:after
     //pq o h1 com titulo do capitulo
@@ -46,10 +79,11 @@ function handlePageAfter(page) {
 
     var format = this.options.format;
     var $ = cheerio.load(page.content);
+    var chapter = page.progress.current;
     var chapterHeader =
         $("<div>")
         .addClass("chapterHeader")
-        .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(page));
+        .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(chapter));
     $("h1.book-chapter")
         .before(chapterHeader);
 
@@ -87,24 +121,31 @@ function handleEbookBefore(options) {
     return options;
 }
 
-function verifyChapterTitle(page){
-	var chapter = page.progress.current.title;
-	if(/^[0-9]/.test(chapter)){
-		throw new Error("Chapter can't begin with numbers: " + chapter);
+function verifyChapterTitle(chapter){
+	var chapterTitle = chapter.title;
+	if(/^[0-9]/.test(chapterTitle)){
+		throw new Error("Chapter can't begin with numbers: " + chapterTitle);
 	}
 }
 
-function obtainChapterNumber(page) {
+function obtainChapterNumber(chapter) {
     //obtem numero do capitulo a partir de info o gitbook
-    return Number(page.progress.current.level) + 1;
+    return Number(chapter.level) + 1;
 }
 
-function addSectionNumbers($, chapterNumber, section) {
+function addSectionNumbers($, chapter, summary, section) {
+    var chapterNumber = obtainChapterNumber(chapter);
     //obtem nome das secoes a partir dos h2
+    var sections = [];
     $("h2").each(function (i) {
         var h2 = $(this);
-        h2.text(sectionNumber(chapterNumber, h2.text(), i));
+        var sectionTitle = sectionNumber(chapterNumber, h2.text(), i);
+        sections.push({title: sectionTitle});
+        h2.text(sectionTitle);
     });
+    summary.chapters.filter(function(summaryChapter){
+        return summaryChapter.path == chapter.path;
+    })[0].sections = sections;
     section.content = $.html();
 }
 
@@ -112,8 +153,8 @@ function sectionNumber(chapterNumber, text, i) {
     return chapterNumber + "." + (i + 1) + " " + text;
 }
 
-function adjustImages($, chapterNumber, section, extension) {
-    
+function adjustImages($, chapter, section, extension) {
+    var chapterNumber = obtainChapterNumber(chapter);
     $("img").each(function (i) {
         var img = $(this);
         var text = img.attr("alt").trim();
