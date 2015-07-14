@@ -144,12 +144,14 @@ function addSectionNumbers($, chapter, summary, section) {
     $("h2").each(function (i) {
         var h2 = $(this);
         var sectionTitle = sectionNumber(chapterNumber, h2.text(), i);
-        sections.push({title: sectionTitle});
+        sections.push({title: sectionTitle, id: h2.attr("id")});
         h2.text(sectionTitle);
     });
-    summary.chapters.filter(function(summaryChapter){
+    var summaryChapter = summary.chapters.filter(function(summaryChapter){
         return summaryChapter.path == chapter.path;
-    })[0].sections = sections;
+    })[0];
+    summaryChapter.sections = sections;
+    summaryChapter.htmlPath =  summaryChapter.path == "README.md" ? "index.html" : summaryChapter.path.replace(".md", ".html");
     section.content = $.html();
 }
 
