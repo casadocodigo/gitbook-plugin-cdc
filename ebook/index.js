@@ -19,37 +19,6 @@ module.exports = {
     "handleEbookBefore": handleEbookBefore
 };
 
-function renderIntro(options){
-        if(options.intro){ //so roda uma vez
-            return;
-        }
-        options.intro = [];
-    
-        var introDir = path.join(options.input, "intro");
-        if(!fs.existsSync(introDir)){
-            return;
-        }
-
-        var files = fs.readdirSync(introDir);
-        var filtered = files.filter(function(file){
-            return path.extname(file) === ".md";
-        });
-        var sortedByName = filtered.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
-        var mdFiles = sortedByName.map(function(file){
-            return path.resolve(introDir, file);
-        });
-        var templateLocation = path.resolve(__dirname , 'templates/intro.tpl.html');
-        mdFiles.forEach(function(mdFile){
-                var mdData = fs.readFileSync(mdFile);
-                var htmlSnippet = kramed(mdData.toString());
-                var tpl = swig.compileFile(templateLocation,{autoescape: false});
-                var html = tpl({ content: htmlSnippet});
-                options.intro.push({content: html});
-        });
-}
-
 function handlePage(page) {
     var format = this.options.format;
     var extension = util.obtainExtension(this.options);
@@ -124,6 +93,38 @@ function handleEbookBefore(options) {
 
     return options;
 }
+
+function renderIntro(options){
+        if(options.intro){ //so roda uma vez
+            return;
+        }
+        options.intro = [];
+
+        var introDir = path.join(options.input, "intro");
+        if(!fs.existsSync(introDir)){
+            return;
+        }
+
+        var files = fs.readdirSync(introDir);
+        var filtered = files.filter(function(file){
+            return path.extname(file) === ".md";
+        });
+        var sortedByName = filtered.sort(function (a, b) {
+            return a.localeCompare(b);
+        });
+        var mdFiles = sortedByName.map(function(file){
+            return path.resolve(introDir, file);
+        });
+        var templateLocation = path.resolve(__dirname , 'templates/intro.tpl.html');
+        mdFiles.forEach(function(mdFile){
+                var mdData = fs.readFileSync(mdFile);
+                var htmlSnippet = kramed(mdData.toString());
+                var tpl = swig.compileFile(templateLocation,{autoescape: false});
+                var html = tpl({ content: htmlSnippet});
+                options.intro.push({content: html});
+        });
+}
+
 
 function verifyChapterTitle(chapter){
 	var chapterTitle = chapter.title;
