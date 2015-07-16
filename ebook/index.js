@@ -27,10 +27,11 @@ function handlePage(page) {
     verifyChapterTitle(chapter);
 
     var summary = this.options.summary;
+    var firstChapter = this.options.firstChapter;
     page.sections.forEach(function (section) {
         if (section.type === "normal") {
             var $ = cheerio.load(section.content);
-            addSectionNumbers($, chapter, summary, section);
+            addSectionNumbers($, chapter, firstChapter, summary, section);
             //só ajustar imagens para ebook
             if (format === "ebook") {
                 adjustImages($, chapter, section, extension);
@@ -138,7 +139,7 @@ function obtainChapterNumber(chapter) {
     return Number(chapter.level) + 1;
 }
 
-function addSectionNumbers($, chapter, summary, section) {
+function addSectionNumbers($, chapter, firstChapter, summary, section) {
     var chapterNumber = obtainChapterNumber(chapter);
     //obtem nome das secoes a partir dos h2
     var sections = [];
@@ -152,7 +153,7 @@ function addSectionNumbers($, chapter, summary, section) {
         return summaryChapter.path == chapter.path;
     })[0];
     summaryChapter.sections = sections;
-    summaryChapter.htmlPath =  summaryChapter.path == "README.md" ? "index.html" : summaryChapter.path.replace(".md", ".html");
+    summaryChapter.htmlPath =  summaryChapter.path == "README.md" ? firstChapter+".html" : summaryChapter.path.replace(".md", ".html");
     section.content = $.html();
 }
 
