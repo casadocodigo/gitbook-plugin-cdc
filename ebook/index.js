@@ -178,12 +178,13 @@ function adjustImages($, chapter, section, extension) {
         //insere div com caption
         var parent = img.parent();
         img.attr("alt", text).remove();
-        var caption = $("<p class='figcaption'>");
-        if(text.trim().length > 0){
-            caption.text(CAPTION_PREFIX + chapterNumber + "." + (i + 1) + ": " + text.trim());
-        }
-        var figure = $("<div class='figure'>").append(img).append(caption);
+		var figure = $("<div class='figure'>").append(img);
         parent.after(figure);
+        if(text.trim().length > 0){
+			var caption = $("<p class='figcaption'>");
+            caption.text(CAPTION_PREFIX + chapterNumber + "." + (i + 1) + ": " + text.trim());
+			figure.append(caption);
+        }
     });
 
     section.content = $.html();
