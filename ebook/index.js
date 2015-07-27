@@ -32,10 +32,7 @@ function handlePage(page) {
         if (section.type === "normal") {
             var $ = cheerio.load(section.content);
             addSectionNumbers($, chapter, firstChapter, summary, section);
-            //só ajustar imagens para ebook
-            if (format === "ebook") {
-                adjustImages($, chapter, section, extension);
-            }
+            adjustImages($, chapter, section, extension);
             removeComments($, section);
         }
     });
