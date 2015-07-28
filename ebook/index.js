@@ -168,11 +168,8 @@ function adjustImages($, chapter, section, extension) {
         var regexMatch = text.match(WIDTH_REGEX);
         if (regexMatch && regexMatch[1]) {
             text = text.replace(WIDTH_REGEX, "");
-            if (extension === "pdf") {
-                //só para PDF
-                var width = regexMatch[1];
-                img.css("width", width + "%");
-            }
+			var width = regexMatch[1];
+			img.css("width", width + "%");
         }
 
         //insere div com caption
