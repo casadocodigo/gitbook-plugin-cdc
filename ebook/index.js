@@ -3,7 +3,6 @@ var fs = require("fs");
 
 var cheerio = require("cheerio");
 var kramed = require("kramed");
-var swig = require("swig");
 
 var util = require("./../util.js");
 
@@ -12,6 +11,8 @@ var CAPTION_PREFIX = "Figura ";
 var TOC_TITLE = "Sumário";
 
 var WIDTH_REGEX = /\{w=(\d+)%?\}$/;
+
+var DESKTOP_WIDTH = 1000;
 
 module.exports = {
     "handlePage": handlePage,
@@ -117,9 +118,7 @@ function renderIntro(options){
         mdFiles.forEach(function(mdFile){
                 var mdData = fs.readFileSync(mdFile);
                 var htmlSnippet = kramed(mdData.toString());
-                var tpl = swig.compileFile(templateLocation,{autoescape: false});
-                var html = tpl({ content: htmlSnippet});
-                options.intro.push({content: html});
+                options.intro.push({content: htmlSnippet});
         });
 }
 
@@ -168,8 +167,9 @@ function adjustImages($, chapter, section, extension) {
         var regexMatch = text.match(WIDTH_REGEX);
         if (regexMatch && regexMatch[1]) {
             text = text.replace(WIDTH_REGEX, "");
-			var width = regexMatch[1];
-			img.css("width", width + "%");
+			var width = parseInt(regexMatch[1]);
+			var maxWidth = width/100 * DESKTOP_WIDTH;
+			img.css("max-width", maxWidth + "px");
         }
 
         //insere div com caption
