@@ -21,19 +21,16 @@ module.exports = {
 };
 
 function handlePage(page) {
-    var format = this.options.format;
-    var extension = util.obtainExtension(this.options);
+    var options = this.options;
 
     var chapter = page.progress.current;
     verifyChapterTitle(chapter);
 
-    var summary = this.options.summary;
-    var firstChapter = this.options.firstChapter;
     page.sections.forEach(function (section) {
         if (section.type === "normal") {
             var $ = cheerio.load(section.content);
-            addSectionNumbers($, chapter, firstChapter, summary, section);
-            adjustImages($, chapter, section, extension);
+            addSectionNumbers($, chapter, section, options);
+            adjustImages($, chapter, section, options);
             removeComments($, section);
         }
     });
@@ -42,20 +39,25 @@ function handlePage(page) {
 }
 
 function handlePageAfter(page) {
-    renderIntro(this.options);    
+    var options = this.options;
+
+    renderIntro(options);
+
+    var chapter = page.progress.current;
+
+    if(isIntroFile(chapter, options)){
+       return page;
+    }
 
     //inserindo numero do capitulo
     //tem que fazer no page:after
     //pq o h1 com titulo do capitulo
     //é colocado depois do hook de page
-
-    var format = this.options.format;
     var $ = cheerio.load(page.content);
-    var chapter = page.progress.current;
     var chapterHeader =
         $("<div>")
         .addClass("chapterHeader")
-        .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(chapter));
+        .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(chapter, options));
     $("h1.book-chapter")
         .before(chapterHeader);
 
@@ -130,13 +132,23 @@ function verifyChapterTitle(chapter){
 	}
 }
 
-function obtainChapterNumber(chapter) {
-    //obtem numero do capitulo a partir de info o gitbook
-    return Number(chapter.level) + 1;
+function obtainChapterNumber(chapter, options) {
+    //obtem numero do capitulo a partir de info do gitbook
+    var chapterLevel = Number(chapter.level);
+    var numIntroChapters = Number(options.numIntroChapters);
+    return chapterLevel - numIntroChapters + 1;
 }
 
-function addSectionNumbers($, chapter, firstChapter, summary, section) {
-    var chapterNumber = obtainChapterNumber(chapter);
+function addSectionNumbers($, chapter, section, options) {
+
+    if(isIntroFile(chapter, options)){
+       return;
+    }
+
+    var summary = options.summary;
+    var firstChapter = options.firstChapter;
+
+    var chapterNumber = obtainChapterNumber(chapter, options);
     //obtem nome das secoes a partir dos h2
     var sections = [];
     $("h2").each(function (i) {
@@ -157,8 +169,8 @@ function sectionNumber(chapterNumber, text, i) {
     return chapterNumber + "." + (i + 1) + " " + text;
 }
 
-function adjustImages($, chapter, section, extension) {
-    var chapterNumber = obtainChapterNumber(chapter);
+function adjustImages($, chapter, section, options) {
+    var chapterNumber = obtainChapterNumber(chapter, options);
     $("img").each(function (i) {
         var img = $(this);
         var text = img.attr("alt").trim();
@@ -195,4 +207,14 @@ function removeComments($, section){
     })
     .remove();
     section.content = $.html();
+}
+
+function isIntroFile(chapter, options){
+    //para epub e mobi, .md da intro sao colocados no SUMMARY
+    var extension = util.obtainExtension(options);
+    var numIntroChapters = options.numIntroChapters;
+    if((extension == "epub" || extension == "mobi") && numIntroChapters > 0 && (chapter.path == "README.md" || chapter.path.indexOf("intro") == 0)){
+        return true;
+    }
+    return false;
 }
