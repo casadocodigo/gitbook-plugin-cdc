@@ -3,7 +3,10 @@ var preContent = require("./pre-content");
 
 module.exports = {
     hooks: {
-        "page": function(page) {
+        "page:before": function(page) {
+            return ebook.handlePageBefore.call(this, page);
+        }
+        , "page": function(page) {
             return ebook.handlePage.call(this, page);
         }
         , "page:after": function(page) {
