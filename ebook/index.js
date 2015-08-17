@@ -23,10 +23,12 @@ module.exports = {
 
 function handlePageBefore(page) {
     var maxLength = this.options.maxLineLength || 100;
+    var firstChapter = this.options.firstChapter;
 
     page.content.split("\n").forEach(function(line, i){
         if(line.length > maxLength) {
-            console.log('"'+line.substring(0, 20) + '"... line too long. was: ' + line.length + ' (max ' + maxLength + ') in ' + page.path+':'+(i+1));
+            var filename = page.path == "README.md" ? firstChapter+".md" : page.path;
+            console.log('"'+line.substring(0, 20) + '"... line too long. was: ' + line.length + ' (max ' + maxLength + ') in ' + filename +':'+(i+1));
         }
     });
     return page;
