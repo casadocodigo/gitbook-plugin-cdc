@@ -22,13 +22,23 @@ module.exports = {
 };
 
 function handlePageBefore(page) {
-    var maxLength = this.options.maxLineLength || 100;
-    var firstChapter = this.options.firstChapter;
-
+    var maxLength = this.options.maxLineLength || 80;
+    var filename = page.path == "README.md" ? this.options.firstChapter+".md" : page.path;
+    var dentroDeCode = false;
+    
+    //nao foi utilizada regex para manter numero de linha (i)
     page.content.split("\n").forEach(function(line, i){
-        if(line.length > maxLength) {
-            var filename = page.path == "README.md" ? firstChapter+".md" : page.path;
-            console.log('"'+line.substring(0, 20) + '"... line too long. was: ' + line.length + ' (max ' + maxLength + ') in ' + filename +':'+(i+1));
+        if(!dentroDeCode && line.trim().indexOf("```") == 0) {
+            dentroDeCode = true; //comecando um novo code
+            if(line.trim() != "```" && line.trim().lastIndexOf("```") == line.trim().length - 3) {
+                dentroDeCode = false; //code de uma linha só
+            }
+        } else if(dentroDeCode && line.trim().indexOf("```") == 0) {
+            dentroDeCode = false; //terminando um code anterior
+        }
+
+        if(dentroDeCode && line.length > maxLength){
+                console.log('warning: code "'+line.trim().substring(0, 30) + '"... too long. was ' + line.length + ' (max ' + maxLength + ') in ' + filename+':'+(i+1));		
         }
     });
     return page;
