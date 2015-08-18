@@ -38,7 +38,7 @@ function handlePageBefore(page) {
         }
 
         if(dentroDeCode && line.length > maxLength){
-                console.log('warning: code "'+line.trim().substring(0, 30) + '"... too long. was ' + line.length + ' (max ' + maxLength + ') in ' + filename+':'+(i+1));		
+            console.log('warning: code "'+line.trim().substring(0, 30) + '"... too long. was ' + line.length + ' (max ' + maxLength + ') in ' + filename+':'+(i+1));		
         }
     });
     return page;
