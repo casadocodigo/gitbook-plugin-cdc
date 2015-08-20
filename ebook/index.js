@@ -194,6 +194,8 @@ function sectionNumber(chapterNumber, text, i) {
 }
 
 function adjustImages($, chapter, section, options) {
+    var extension = util.obtainExtension(options);
+
     var chapterNumber = obtainChapterNumber(chapter, options);
     $("img").each(function (i) {
         var img = $(this);
@@ -203,20 +205,24 @@ function adjustImages($, chapter, section, options) {
         var regexMatch = text.match(WIDTH_REGEX);
         if (regexMatch && regexMatch[1]) {
             text = text.replace(WIDTH_REGEX, "");
-			var width = parseInt(regexMatch[1]);
-			var maxWidth = width/100 * DESKTOP_WIDTH;
-			img.css("max-width", maxWidth + "px");
+            var width = regexMatch[1];
+            if(extension == "pdf") {
+                img.css("width", width + "%");
+            } else {
+                var maxWidth = parseInt(width)/100 * DESKTOP_WIDTH;
+                img.css("max-width", maxWidth + "px");
+            }
         }
 
         //insere div com caption
         var parent = img.parent();
         img.attr("alt", text).remove();
-		var figure = $("<div class='figure'>").append(img);
+        var figure = $("<div class='figure'>").append(img);
         parent.after(figure);
         if(text.trim().length > 0){
-			var caption = $("<p class='figcaption'>");
+            var caption = $("<p class='figcaption'>");
             caption.text(CAPTION_PREFIX + chapterNumber + "." + (i + 1) + ": " + text.trim());
-			figure.append(caption);
+            figure.append(caption);
         }
     });
 
