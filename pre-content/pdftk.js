@@ -171,10 +171,12 @@ function generatePdftkJoinCall(pdfFile, files, outputFile){
     function letterAndFile(letter, i){
         return onlyLetter(letter, i) + '="' + files[i] + '"';
     }
-    
+
+    //O toc original, gerado pelo gitbook/calibre, tem sempre apenas uma pagina.
+    //isso é garantido pq o conteudo do toc original nao é visivel (display:none).
+
     var pdftkCall = 'pdftk A="' + pdfFile + '"';
     pdftkCall += filesRanges(files, letterAndFile) 
-    //TODO: descobrir o numero de paginas do toc original (considerando 1)
     pdftkCall +=  ' cat A1';
     pdftkCall += filesRanges(files, onlyLetter) 
     pdftkCall += ' A3-end output ' + outputFile;

@@ -2,8 +2,10 @@ function update(toc){
     //Atualiza numero de paginas do toc, 
     //para o primeiro capitulo comecar na pagina 1
     
+    //O toc original, gerado pelo gitbook/calibre, tem sempre apenas uma pagina.
+    //isso é garantido pq o conteudo do toc original nao é visivel (display:none).
+
     var updatedToc = [];
-    //TODO: descobrir quantas paginas tem o TOC no PDF original 
     var pageNumberOffset = 2; //descontando 1 pagina para a capa + uma pagina para o toc original
     toc.forEach(function(chapter){
         var updatedChapter = { 
