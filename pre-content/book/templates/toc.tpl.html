@@ -43,7 +43,7 @@
             <ul class="chapter-toc">
             {% for chapter in chapters %}
                 <li>
-                    <span class="chapter-name-toc">{{ chapter.title }}</span><span class="chapter-page-toc"></span>
+                    <span class="chapter-name-toc">{{ chapter.title }}</span><span class="chapter-page-toc">{{ chapter.pageNumber }}</span>
                     <ul class="section-toc">
                         {% for section in chapter.sections %}
                             <li>
