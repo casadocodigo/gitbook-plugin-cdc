@@ -116,14 +116,14 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     return Q().then(function () {
         return dir.listFilesByName(extrasDir, ".pdf");
     }).then(function (extras) {
-        if(extras) {
+        if(extras.length) {
             console.log("Extra files from " + extrasDir+ ": " + extras.join(","));
         }
         extraFiles = extras;
     }).then(function () {
         return dir.listFilesByName(inBookExtrasDir, ".pdf");
     }).then(function (extras) {
-        if(extras) {
+        if(extras.length) {
             console.log("Extra files from " + inBookExtrasDir+ ": " + extras.join(","));
         }
         extras.forEach(function(file){
@@ -132,7 +132,7 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     }).then(function () {
         return dir.listFilesByName(introDir, ".md");
     }).then(function (introMDs) {
-        if(introMDs) {
+        if(introMDs.length) {
             console.log("Intro files from " + introDir+ ": " + introMDs.join(","));
         }
         introMDs.forEach(function (file) {
