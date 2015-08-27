@@ -43,8 +43,10 @@ function extractTOC(pdfFile) {
                           'BookmarkPageNumber': []
                         };
             bookmarkInfo.forEach(function(el){
-               var bookmark = el.split(':');
-               tocInfo[bookmark[0]].push(bookmark[1]);
+               var index = el.indexOf(':');
+               var key = el.substring(0, index);
+               var value = el.substring(index+1);
+               tocInfo[key].push(value);
             });
 
 
