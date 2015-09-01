@@ -3,11 +3,10 @@ var path = require("path");
 var fs = require("fs-extra");
 var Q = require("q");
 
-
 var util = require("./../util.js");
 
 var pdftk = require("./pdftk.js");
-var tocUpdater = require("./toc.js");
+var tocHandler = require("./toc.js");
 var htmlRenderer = require("./htmlRenderer.js");
 var calibre = require("./calibre.js");
 var dir = require("./dir.js");
@@ -42,11 +41,16 @@ function finish() {
             publisher: this.options.publisher,
             title: this.options.title
         },
+        positions: {
+            pages: []
+        },
         options : this.options
     };
 
     return Q().then(function () {
         return renderTocPDF(outputDir, originalPDF, pdfInfo);
+    }).then(function (tocPDF) {
+        return tocHandler.findLinkPositions(tocPDF, pdfInfo);
     }).then(function (tocPDF) {
         return handlePreContent(inputDir, outputDir, tocPDF, pdfInfo);
     }).then(function (preContent) {
@@ -73,7 +77,7 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
     return Q().then(function () {
         return pdftk.extractTOC(originalPDF);
     }).then(function (toc) {
-        return tocUpdater.update(toc);
+        return tocHandler.update(toc);
     }).then(function (toc) {
         pdfInfo.toc = toc;
         return htmlRenderer.render({ chapters: toc }, tocTemplate);

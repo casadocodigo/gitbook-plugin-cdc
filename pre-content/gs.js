@@ -37,19 +37,33 @@ module.exports = {
 function pageNumberInfo(info){
     var firstChapterPageNumber = info.preContent.numberOfPages + 1;
     
-    var pageInfo = "";
-    pageInfo += "[ /Title ("+info.book.title+")\n";
-    pageInfo += "/Author ("+info.book.author+")\n";
-    pageInfo += "/Creator ("+info.book.publisher+")\n";
-    pageInfo += "/Producer ("+info.book.publisher+")\n";
-    pageInfo += "/DOCINFO pdfmark\n";
-    pageInfo += "[/_objdef {pl} /type /dict /OBJ pdfmark\n";
-    pageInfo += "[{pl} <</Nums [ \n"
-    pageInfo += "0 << /S /r >> \n"; //capa e sumário em números romanos
-    pageInfo += firstChapterPageNumber + " << /S /D /St 1 >> \n";
-    pageInfo += "]>> /PUT pdfmark\n";
-    pageInfo += "[{Catalog} <</PageLabels {pl}>> /PUT pdfmark";
-    return pageInfo;
+    var pdfMarks = "";
+    pdfMarks += "[ /Title ("+info.book.title+")\n";
+    pdfMarks += "/Author ("+info.book.author+")\n";
+    pdfMarks += "/Creator ("+info.book.publisher+")\n";
+    pdfMarks += "/Producer ("+info.book.publisher+")\n";
+    pdfMarks += "/DOCINFO pdfmark\n";
+    pdfMarks += "[/_objdef {pl} /type /dict /OBJ pdfmark\n";
+    pdfMarks += "[{pl} <</Nums [ \n"
+    pdfMarks += "0 << /S /r >> \n"; //capa e sumário em números romanos
+    pdfMarks += firstChapterPageNumber + " << /S /D /St 1 >> \n";
+    pdfMarks += "]>> /PUT pdfmark\n";
+    pdfMarks += "[{Catalog} <</PageLabels {pl}>> /PUT pdfmark\n\n";
+
+    info.positions.pages.forEach(function(page, i) {
+        page.links.forEach(function(link){
+            pdfMarks += "[\n";
+            pdfMarks += "/Rect [ " + link.xMin.toFixed() + " " + link.yMin.toFixed() + " " + link.xMax.toFixed() + " " + link.yMax.toFixed() + " ]\n";
+            pdfMarks += "/Border [ 0 0 1 ]\n";
+            pdfMarks += "/Color [ 0 0 1 ]\n";
+            pdfMarks += "/Page " + (firstChapterPageNumber + link.page) + "\n";
+            pdfMarks += "/SrcPg " + (i+2) + "\n";
+            pdfMarks += "/Subtype /Link\n";
+            pdfMarks += "/ANN pdfmark\n\n";
+        });
+    });
+
+    return pdfMarks;
 }
 
 
