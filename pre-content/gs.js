@@ -35,7 +35,7 @@ module.exports = {
 };
 
 function pageNumberInfo(info){
-    var firstChapterPageNumber = info.preContent.numberOfPages + 1;
+    var firstChapterPageNumber = info.preContent.extras.numberOfPages + info.preContent.intro.numberOfPages + info.preContent.toc.numberOfPages + 1;
     
     var pdfMarks = "";
     pdfMarks += "[ /Title ("+info.book.title+")\n";
@@ -57,7 +57,7 @@ function pageNumberInfo(info){
             pdfMarks += "/Border [ 0 0 1 ]\n";
             pdfMarks += "/Color [ 0 0 1 ]\n";
             pdfMarks += "/Page " + (firstChapterPageNumber + link.page) + "\n";
-            pdfMarks += "/SrcPg " + (i+2) + "\n";
+            pdfMarks += "/SrcPg " + (i+2+info.preContent.extras.numberOfPages + info.preContent.intro.numberOfPages) + "\n";
             pdfMarks += "/Subtype /Link\n";
             pdfMarks += "/ANN pdfmark\n\n";
         });

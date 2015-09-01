@@ -45,6 +45,7 @@ function findLinkPositions(tocPdf, pdfInfo){
     })
     .then(positionXmlToJs)
     .then(function (positions) {
+        console.log("Building pdf links...");
         var headers = headerText(pdfInfo);
 
         var pages = positions.html.body[0].doc[0].page;
@@ -71,6 +72,7 @@ function findLinkPositions(tocPdf, pdfInfo){
             });
             pdfInfo.positions.pages.push(pageInfo);
         });
+        console.log("Built pdf links...");
     })
     .then(function(){
         return tocPdf;

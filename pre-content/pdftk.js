@@ -90,6 +90,10 @@ function extractTOC(pdfFile) {
 }
 
 function extractNumberOfPagesFromFiles(files){
+    if(!files.length) {
+        return 0;
+    }
+
     var d = Q.defer();
 
     return Q().then(function () {
@@ -117,7 +121,7 @@ function extractNumberOfPagesFromFiles(files){
 }
 
 function join(pdfFile, files, outputFile){
-    console.log("pdftk - Preparing to join toc...");
+    console.log("pdftk - Preparing to join pre content to pdf...");
     var d = Q.defer();
     return Q().then(function(){
         var pdftkCall = generatePdftkJoinCall(pdfFile, files, outputFile);
@@ -125,10 +129,10 @@ function join(pdfFile, files, outputFile){
         console.log(pdftkCall);
         exec(pdftkCall, function (error, stdout, stderr) {
             if (error) {
-                console.log("pdftk - Error while joining TOC. :/");
+                console.log("pdftk - Error while joining pre content. :/");
                 return d.reject(error);
             }
-            console.log("pdftk - Joined TOC! :)");
+            console.log("pdftk - Joined pre content! :)");
             return d.resolve();
         });
         return d.promise;
@@ -189,7 +193,7 @@ function bookmarkInfo(info){
     var pdfInfo = "";
     
     //somando 1 para considerar a capa
-    var pageNumberOffset = info.preContent.numberOfPages + 1;
+    var pageNumberOffset = info.preContent.extras.numberOfPages + info.preContent.intro.numberOfPages + info.preContent.toc.numberOfPages + 1;
 
     if(info.toc){
         info.toc.forEach(function(chapter){
@@ -214,7 +218,7 @@ function bookmarkInfo(info){
 
 function extractNumberOfPages(pdfFile) {
     console.log("pdftk - Preparing to extract number of pages...")
-    
+
     var d = Q.defer();
 
     return Q().then(function () {
@@ -236,8 +240,8 @@ function extractNumberOfPages(pdfFile) {
                 .filter(function(line){
                     return line.indexOf("NumberOfPages") == 0;
                 })[0].split(":")[1];
-
             console.log("pdftk - Extracted number of pages! :)");
+
             return d.resolve(parseInt(numberOfPages));
         });
         

@@ -41,6 +41,11 @@ function finish() {
             publisher: this.options.publisher,
             title: this.options.title
         },
+        preContent: {
+            extras: { numberOfPages: 0 },
+            intro: { numberOfPages: 0 },
+            toc: { numberOfPages: 0 }
+        },
         positions: {
             pages: []
         },
@@ -150,11 +155,18 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     }).then(function () {
         preContent = extraFiles.concat(introFiles);
         preContent.push(tocPDF);
-        return preContent;
     }).then(function () {
-        return pdftk.extractNumberOfPagesFromFiles(preContent);
+        return pdftk.extractNumberOfPagesFromFiles(extraFiles);
     }).then(function (numberOfPages) {
-        pdfInfo.preContent = { numberOfPages: numberOfPages };
+        pdfInfo.preContent.extras.numberOfPages = numberOfPages;
+    }).then(function () {
+        return pdftk.extractNumberOfPagesFromFiles(introFiles);
+    }).then(function (numberOfPages) {
+        pdfInfo.preContent.intro.numberOfPages = numberOfPages;
+    }).then(function () {
+        return pdftk.extractNumberOfPagesFromFiles( [tocPDF] );
+    }).then(function (numberOfPages) {
+        pdfInfo.preContent.toc.numberOfPages = numberOfPages;
     }).then(function () {
         return preContent;
     });
