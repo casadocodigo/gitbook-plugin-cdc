@@ -113,14 +113,16 @@ function getLink(words, page, word, i, title, positionTitle, headers) {
 }
 
 function findLinkPageNumber(words, i, headers){
-    var delta = 1;
-    while (headers.indexOf(words[i+delta]._) != -1) {
-        delta++;
+    while (headers.indexOf(words[i]._) != -1) {
+        i++;
     }
-    var linkPage = Number(words[i+delta]._);
-    if(!isNaN(linkPage)){
-        return linkPage;
-    }
+	do {
+		var linkPage = Number(words[i]._);
+		if(!isNaN(linkPage)){
+			return linkPage;
+		}
+		i++;
+	} while (i < words.length);
     return;
 }
 
