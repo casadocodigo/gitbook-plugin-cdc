@@ -54,8 +54,8 @@ function pageNumberInfo(info){
         page.links.forEach(function(link){
             pdfMarks += "[\n";
             pdfMarks += "/Rect [ " + link.xMin.toFixed() + " " + link.yMin.toFixed() + " " + link.xMax.toFixed() + " " + link.yMax.toFixed() + " ]\n";
-            pdfMarks += "/Border [ 0 0 1 ]\n";
-            pdfMarks += "/Color [ 0 0 1 ]\n";
+            //pdfMarks += "/Border [ 0 0 1 ]\n";
+            //pdfMarks += "/Color [ 0 0 1 ]\n";
             pdfMarks += "/Page " + (firstChapterPageNumber + link.page) + "\n";
             pdfMarks += "/SrcPg " + (i+2+info.preContent.extras.numberOfPages + info.preContent.intro.numberOfPages) + "\n";
             pdfMarks += "/Subtype /Link\n";
