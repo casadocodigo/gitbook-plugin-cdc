@@ -140,7 +140,6 @@ function renderIntro(options){
         var mdFiles = sortedByName.map(function(file){
             return path.resolve(introDir, file);
         });
-        var templateLocation = path.resolve(__dirname , 'templates/intro.tpl.html');
         mdFiles.forEach(function(mdFile){
                 var mdData = fs.readFileSync(mdFile);
                 var htmlSnippet = kramed(mdData.toString());
