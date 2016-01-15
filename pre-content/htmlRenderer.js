@@ -1,7 +1,7 @@
 var Q = require("q");
 var swig = require("swig");
 
-function render(content, templateLocation){
+function render(params, templateLocation){
 
     console.log("htmlRenderer - Preparing to render html...");
 
@@ -26,7 +26,7 @@ function render(content, templateLocation){
                 console.log("htmlRenderer - Error rendering html. :/")
                 return d.reject(error);
             }
-            var output = template(content);
+            var output = template(params);
             console.log("htmlRenderer - html rendered! :)");
             return d.resolve(output);
 

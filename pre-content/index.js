@@ -49,7 +49,8 @@ function finish() {
         positions: {
             pages: []
         },
-        options : this.options
+        options : this.options,
+        css: this.plugins.resources.css
     };
 
     return Q().then(function () {
@@ -151,7 +152,12 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         return introMDs;
     }).then(function (introMDs) {
         var introTemplate = path.resolve(__dirname , 'book/templates/intro.tpl.html');
-        return mdRenderer.renderPdfs(introMDs, introTemplate, pdfInfo.options);
+        var options = {
+            pdf: pdfInfo.options.pdf,
+            cssPath: path.join(pdfInfo.options.output, '/gitbook'),
+            css: pdfInfo.css
+        };
+        return mdRenderer.renderPdfs(introMDs, introTemplate, options);
     }).then(function () {
         preContent = extraFiles.concat(introFiles);
         preContent.push(tocPDF);

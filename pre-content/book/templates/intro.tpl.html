@@ -1,100 +1,11 @@
 <html>
-   <style>
-        body .page {
-            font-family: 'MinionPro', 'Minion Pro';
-            line-height: 2em;
-            font-weight: 300;
-            text-align: justify;
-        }
-
-        body .page h1 {
-            font-weight: normal;
-            line-height: 1.1em;
-            text-transform: uppercase;
-        }
-
-        body .page h2 {
-            font-size: 16pt;
-            font-weight: normal;
-            font-variant: normal;
-            text-transform: uppercase;
-            line-height: 1.1em;
-            padding: 2px 0 0 0;
-            margin: 1em 0 0.5em 0;
-        }
-
-        body .page h3 {
-            font-size: 13pt;
-            font-weight: bold;
-            line-height: 1.1em;
-            margin: 20px 0 15px 0;
-        }
-
-        body .page p {
-            margin: 0.8em 0;
-            border: 0;
-            font-size: 12pt;
-        }
-
-        body .page ul {
-            font-size: 12pt;
-        }
-
-        body .page li {
-            font-size: 12pt;
-        }
-
-        body .page pre {
-            font-size: 11px;
-        }
-
-        body .page code {
-            font-size: 11px;
-        }
-
-        body .page figure {
-            text-align: center;
-            margin-bottom: 3em;
-            page-break-inside: avoid;
-        }
-
-        body .page figure figcaption {
-            margin-top: 2em;
-        }
-
-        p ~ p {
-            text-indent: 1.5em;
-        }
-
-        li > p ~ p {
-            text-indent: 0;
-        }
-
-        body .page .chapterHeader {
-            font-size: 12pt;
-            font-weight: normal;
-            text-align: left;
-            page-break-before: always;
-        }
-
-        body .page .chapterHeader:first-of-type {
-            page-break-before: avoid;
-        }
-
-        .page .book-chapter {
-            text-align: left;
-        }
-
-        .page .book-chapter-1 {
-            font-size: 26pt;
-            font-weight: normal;
-            margin: 0 0 3cm 0;
-        }
-
-    </style>
-   <body>
-        <div class="page">
+    <link rel="stylesheet" href="{{ options.cssPath }}/print.css">
+    {% for css in options.css %}
+        <link rel="stylesheet" href="{{ options.cssPath }}/plugins/{{ css.path }}">
+    {% endfor %}
+    <body>
+        <div class="page intro">
             {{ content }}
-       </div>
+        </div>
     </body>
 </html>

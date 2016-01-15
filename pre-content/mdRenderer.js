@@ -31,7 +31,7 @@ function renderPdf(mdFile, htmlFile, pdfFile, template, options){
         return kramed(mdData.toString());
     }).then(function(htmlSnippet){
         if (template) {
-            return htmlRenderer.render({ content: htmlSnippet }, template);
+            return htmlRenderer.render({ content: htmlSnippet, options: options }, template);
         }
         return htmlSnippet;
     }).then(function (html) {
