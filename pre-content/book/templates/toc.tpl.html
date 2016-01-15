@@ -1,48 +1,13 @@
 <html>
-   <style>
-       ul, li {
-         font-family: 'MinionPro', 'Minion Pro';
-       }
-       ul {
-           list-style-type: none;
-       }
-       h1 {
-           margin-top: 110px!important;
-           margin-bottom: 70px!important;
-           font-size: 3em;
-           font-family: 'MinionPro', 'Minion Pro';
-       }
-       .chapter-toc {
-           padding-left: 0;
-       }
-       .chapter-toc li {
-           margin-bottom: 17px;
-           font-size: 12pt;
-       }
-       .chapter-name-toc {
-           font-weight: bold;
-           color: #0000B3;
-       }
-       .chapter-page-toc {
-           font-weight: bold;
-           float: right;
-       }
-       .section-toc {
-           margin-top: 7px;
-       }
-       .section-toc li {
-           margin-bottom: 7px;
-           font-size: 11pt;
-       }
-       .section-name-toc {
-           color: #0000B3;
-       }
-       .section-page-toc {
-           float: right;
-       }
-   </style>
-   <body>
-        <div class="page">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="{{ cssPath }}/print.css">
+        {% for cssFile in css %}
+            <link rel="stylesheet" href="{{ cssPath }}/plugins/{{ cssFile.path }}">
+        {% endfor %}
+    </head>
+    <body>
+        <div class="toc">
             <h1>Sumário</h1>
             <ul class="chapter-toc">
             {% for chapter in chapters %}

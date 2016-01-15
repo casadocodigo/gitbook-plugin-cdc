@@ -86,7 +86,12 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
         return tocHandler.update(toc);
     }).then(function (toc) {
         pdfInfo.toc = toc;
-        return htmlRenderer.render({ chapters: toc }, tocTemplate);
+        var tocOptions = {
+            chapters: toc,
+            cssPath: path.join(pdfInfo.options.output, '/gitbook'),
+            css: pdfInfo.css
+        };
+        return htmlRenderer.render(tocOptions, tocTemplate);
     }).then(function (html) {
         return Q.nfcall(fs.writeFile, tocHTML, html);
     }).then(function () {
@@ -152,12 +157,12 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         return introMDs;
     }).then(function (introMDs) {
         var introTemplate = path.resolve(__dirname , 'book/templates/intro.tpl.html');
-        var options = {
+        var introOptions = {
             pdf: pdfInfo.options.pdf,
             cssPath: path.join(pdfInfo.options.output, '/gitbook'),
             css: pdfInfo.css
         };
-        return mdRenderer.renderPdfs(introMDs, introTemplate, options);
+        return mdRenderer.renderPdfs(introMDs, introTemplate, introOptions);
     }).then(function () {
         preContent = extraFiles.concat(introFiles);
         preContent.push(tocPDF);
