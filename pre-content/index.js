@@ -50,7 +50,8 @@ function finish() {
             pages: []
         },
         options : this.options,
-        css: this.plugins.resources.css
+        css: this.plugins.resources.css,
+        cssPath: path.join(util.outputPath(this.options), '/gitbook')
     };
 
     return Q().then(function () {
@@ -88,8 +89,7 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
         pdfInfo.toc = toc;
         var tocOptions = {
             chapters: toc,
-            cssPath: path.join(pdfInfo.options.output, '/gitbook'),
-            css: pdfInfo.css
+            options: pdfInfo
         };
         return htmlRenderer.render(tocOptions, tocTemplate);
     }).then(function (html) {
@@ -126,8 +126,8 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     var extraFiles = [];
     var introFiles = [];
 
-    var preContent = [];
-    
+    var preContentFiles = [];
+
     return Q().then(function () {
         return dir.listFilesByName(extrasDir, ".pdf");
     }).then(function (extras) {
@@ -148,7 +148,7 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         return dir.listFilesByName(introDir, ".md");
     }).then(function (introMDs) {
         if(introMDs.length) {
-            console.log("Intro files from " + introDir+ ": " + introMDs.join(","));
+            console.log("Intro files from '" + introDir+ "': " + introMDs.join(","));
         }
         introMDs.forEach(function (file) {
             var pdfFile = file.replace(".md", ".pdf");
@@ -157,15 +157,10 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         return introMDs;
     }).then(function (introMDs) {
         var introTemplate = path.resolve(__dirname , 'book/templates/intro.tpl.html');
-        var introOptions = {
-            pdf: pdfInfo.options.pdf,
-            cssPath: path.join(pdfInfo.options.output, '/gitbook'),
-            css: pdfInfo.css
-        };
-        return mdRenderer.renderPdfs(introMDs, introTemplate, introOptions);
+        return mdRenderer.renderPdfs(introMDs, introTemplate, pdfInfo);
     }).then(function () {
-        preContent = extraFiles.concat(introFiles);
-        preContent.push(tocPDF);
+        preContentFiles = extraFiles.concat(introFiles);
+        preContentFiles.push(tocPDF);
     }).then(function () {
         return pdftk.extractNumberOfPagesFromFiles(extraFiles);
     }).then(function (numberOfPages) {
@@ -179,6 +174,6 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     }).then(function (numberOfPages) {
         pdfInfo.preContent.toc.numberOfPages = numberOfPages;
     }).then(function () {
-        return preContent;
+        return preContentFiles;
     });
 }

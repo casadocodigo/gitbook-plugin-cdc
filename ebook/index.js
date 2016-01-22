@@ -10,10 +10,6 @@ var CHAPTER_HEADER_TITLE = "Capítulo ";
 var CAPTION_PREFIX = "Figura ";
 var TOC_TITLE = "Sumário";
 
-var WIDTH_REGEX = /\{w=(\d+)%?\}$/;
-
-var DESKTOP_WIDTH = 1000;
-
 var parts = {};
 
 module.exports = {
@@ -93,7 +89,7 @@ function handlePageAfter(page) {
                 imgSrc = imgSrc.replace(/^\.\.\//, "");
                 img.attr("src", imgSrc);
             }
-            adjustImageWidth(img, extension);
+            util.adjustImageWidth(img, extension);
             partHeaderHtml = $.html();
 
             var partHeader = '<div class="part-header">\n' + partHeaderHtml + '</div>\n';
@@ -238,28 +234,11 @@ function adjustImages($, chapter, section, options) {
     var chapterNumber = obtainChapterNumber(chapter, options);
     $("img").each(function (i) {
         var img = $(this);
-        adjustImageWidth(img, extension);
+        util.adjustImageWidth(img, extension);
         insertImageCaption($, img, i, chapterNumber);
     });
 
     section.content = $.html();
-}
-
-function adjustImageWidth(img, extension){
-    //ajusta width da imagem
-    var text = img.attr("alt").trim();
-    var regexMatch = text.match(WIDTH_REGEX);
-    if (regexMatch && regexMatch[1]) {
-        text = text.replace(WIDTH_REGEX, "");
-        var width = regexMatch[1];
-        if(extension == "pdf") {
-            img.css("width", width + "%");
-        } else {
-            var maxWidth = parseInt(width)/100 * DESKTOP_WIDTH;
-            img.css("max-width", maxWidth + "px");
-        }
-        img.attr("alt", text);
-    }
 }
 
 function insertImageCaption($, img, i, chapterNumber){

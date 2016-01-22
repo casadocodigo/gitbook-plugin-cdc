@@ -1,19 +1,21 @@
 var fs = require("fs");
 
 var Q = require("q");
+var cheerio = require("cheerio");
 var kramed = require("kramed");
 
 var calibre = require("./calibre.js");
 var htmlRenderer = require("./htmlRenderer.js");
+var util = require("./../util.js");
 
-function renderPdfs(files, template, options){
+function renderPdfs(files, template, pdfInfo){
     return Q()
         .then(function(){
             var promises = [];
             files.forEach(function(mdFile){
                 var htmlFile = mdFile.replace(".md", ".html");
                 var pdfFile = htmlFile.replace(".html", ".pdf");
-                promises.push(renderPdf(mdFile, htmlFile, pdfFile, template, options));
+                promises.push(renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo));
             });
             return Q.all(promises);
         });
@@ -23,15 +25,22 @@ module.exports = {
     renderPdfs: renderPdfs
 }
 
-    
-function renderPdf(mdFile, htmlFile, pdfFile, template, options){
+function renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo){
     return Q().then(function(){
         return Q.nfcall(fs.readFile, mdFile);
     }).then(function(mdData){
-        return kramed(mdData.toString());
+        var extension = util.obtainExtension(pdfInfo.options);
+        var htmlSnippet = kramed(mdData.toString());
+        var $ = cheerio.load(htmlSnippet);
+        var img = $("img");
+        if(img.length) {
+            util.adjustImageWidth(img, extension);
+            htmlSnippet = $.html();
+        }
+        return htmlSnippet;
     }).then(function(htmlSnippet){
         if (template) {
-            return htmlRenderer.render({ content: htmlSnippet, options: options }, template);
+            return htmlRenderer.render({ content: htmlSnippet, options: pdfInfo }, template);
         }
         return htmlSnippet;
     }).then(function (html) {
@@ -44,16 +53,16 @@ function renderPdf(mdFile, htmlFile, pdfFile, template, options){
             "--unit": "millimeter",
             "--chapter": "/",
             "--page-breaks-before": "/",
-            "--custom-size": options.pdf.customSize,
-            "--margin-left": options.pdf.margin.left,
-            "--margin-right": options.pdf.margin.right,
-            "--margin-top": options.pdf.margin.top,
-            "--margin-bottom": options.pdf.margin.bottom,
-            "--pdf-default-font-size": options.pdf.fontSize,
-            "--pdf-mono-font-size": options.pdf.fontSize,
+            "--custom-size": pdfInfo.options.pdf.customSize,
+            "--margin-left": pdfInfo.options.pdf.margin.left,
+            "--margin-right": pdfInfo.options.pdf.margin.right,
+            "--margin-top": pdfInfo.options.pdf.margin.top,
+            "--margin-bottom": pdfInfo.options.pdf.margin.bottom,
+            "--pdf-default-font-size": pdfInfo.options.pdf.fontSize,
+            "--pdf-mono-font-size": pdfInfo.options.pdf.fontSize,
             "--pdf-header-template": null,
             "--pdf-footer-template": null
         };
         return calibre.generate(htmlFile, pdfFile, pdfOptions);
     });
-}    
+}

@@ -1,9 +1,9 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="{{ cssPath }}/print.css">
-        {% for cssFile in css %}
-            <link rel="stylesheet" href="{{ cssPath }}/plugins/{{ cssFile.path }}">
+        <link rel="stylesheet" href="{{ options.cssPath }}/print.css">
+        {% for css in options.css %}
+            <link rel="stylesheet" href="{{ options.cssPath }}/plugins/{{ css.path }}">
         {% endfor %}
     </head>
     <body>
