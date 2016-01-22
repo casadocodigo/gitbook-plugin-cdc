@@ -134,8 +134,14 @@ function handleEbookBefore(options) {
     options["--publisher"] = this.options.publisher;
 
     options["--chapter-mark"] = "none";
+
     options["--level2-toc"] = "//h:h2";
     options["--level3-toc"] = null;
+    if((extension == "epub" || extension == "mobi") && this.options.partHeaders.length){
+        options["--level1-toc"] = "//*[@class='part-header']/h:h1";
+        options["--level2-toc"] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' book-chapter-1 ')]" ;
+        options["--level3-toc"] = "//h:h2";
+    }
     
     if (extension === "mobi") {
         options["--mobi-keep-original-images"] = true;
