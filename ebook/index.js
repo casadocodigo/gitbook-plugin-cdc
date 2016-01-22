@@ -68,34 +68,36 @@ function handlePageAfter(page) {
 
     var chapter = page.progress.current;
 
-    var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
-    var chapterDir = path.dirname(chapterPath);
-    if(chapterDir.indexOf("part-") == 0){
-        var partHeaderPath = options.partHeaders.filter(function(partHeader){
-            return path.dirname(partHeader) == chapterDir;
-        })[0];
+    if((extension == "epub" || extension == "mobi") && this.options.partHeaders.length){
+        var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
+        var chapterDir = path.dirname(chapterPath);
+        if(chapterDir.indexOf("part-") == 0){
+            var partHeaderPath = options.partHeaders.filter(function(partHeader){
+                return path.dirname(partHeader) == chapterDir;
+            })[0];
 
-        if(partHeaderPath && !parts[partHeaderPath]) {
-            parts[partHeaderPath] = true;
+            if(partHeaderPath && !parts[partHeaderPath]) {
+                parts[partHeaderPath] = true;
 
-            var partHeaderFile = path.join(options.input, partHeaderPath);
-            var partHeaderMd = fs.readFileSync(partHeaderFile);
-            var partHeaderHtml = kramed(partHeaderMd.toString());
+                var partHeaderFile = path.join(options.input, partHeaderPath);
+                var partHeaderMd = fs.readFileSync(partHeaderFile);
+                var partHeaderHtml = kramed(partHeaderMd.toString());
 
-            var $ = cheerio.load(partHeaderHtml);
-            var img = $("img");
-            if(chapter.path == "README.md"){
-                var imgSrc = img.attr("src");
-                imgSrc = imgSrc.replace(/^\.\.\//, "");
-                img.attr("src", imgSrc);
+                var $ = cheerio.load(partHeaderHtml);
+                var img = $("img");
+                if(chapter.path == "README.md"){
+                    var imgSrc = img.attr("src");
+                    imgSrc = imgSrc.replace(/^\.\.\//, "");
+                    img.attr("src", imgSrc);
+                }
+                util.adjustImageWidth(img, extension);
+                partHeaderHtml = $.html();
+
+                var partHeader = '<div class="part-header">\n' + partHeaderHtml + '</div>\n';
+                var $ = cheerio.load(page.content);
+                $(".page").prepend(partHeader);
+                page.content = $.html();
             }
-            util.adjustImageWidth(img, extension);
-            partHeaderHtml = $.html();
-
-            var partHeader = '<div class="part-header">\n' + partHeaderHtml + '</div>\n';
-            var $ = cheerio.load(page.content);
-            $(".page").prepend(partHeader);
-            page.content = $.html();
         }
     }
 
