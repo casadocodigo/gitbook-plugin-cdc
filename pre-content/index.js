@@ -49,6 +49,12 @@ function finish() {
         positions: {
             pages: []
         },
+        parts: {
+            status: {
+            },
+            mds: [],
+            pdfs: []
+        },
         options : this.options,
         css: this.plugins.resources.css,
         cssPath: path.join(util.outputPath(this.options), '/gitbook')
@@ -60,8 +66,35 @@ function finish() {
         return tocHandler.findLinkPositions(tocPDF, pdfInfo);
     }).then(function (tocPDF) {
         return handlePreContent(inputDir, outputDir, tocPDF, pdfInfo);
-    }).then(function (preContent) {
-        return pdftk.join(originalPDF, preContent, pdfWithPreContent);
+    }).then(function(){
+        pdfInfo.options.summary.chapters.forEach(function(chapter){
+            var chapterPath = chapter.path == "README.md" ? pdfInfo.options.firstChapter+".md" : chapter.path;
+            var chapterDir = path.dirname(chapterPath);
+            if(chapterDir.indexOf("part-") == 0){
+                var partHeaderPath = pdfInfo.options.partHeaders.filter(function(partHeader){
+                    return path.dirname(partHeader) == chapterDir;
+                })[0];
+                if(partHeaderPath && !pdfInfo.parts.status[partHeaderPath]) {
+                    pdfInfo.parts.status[partHeaderPath] = true;
+                    pdfInfo.parts.mds.push(path.join(outputDir, partHeaderPath));
+                }
+            }
+        });
+    }).then(function () {
+        if(pdfInfo.parts.mds.length) {
+            console.log("Part header files from " + outputDir+ ": " + pdfInfo.parts.mds.join(","));
+        }
+        pdfInfo.parts.mds.forEach(function (file) {
+            var pdfFile = file.replace(".md", ".pdf");
+            pdfInfo.parts.pdfs.push(pdfFile);
+        });
+    }).then(function () {
+        var partHeaderTemplate = path.resolve(__dirname , 'book/templates/part.tpl.html');
+        return mdRenderer.renderPdfs(pdfInfo.parts.mds, partHeaderTemplate, pdfInfo);
+    }).then(function (partPdfs) {
+        pdfInfo.parts.pdfs.concat(partPdfs);
+    }).then(function () {
+        return pdftk.join(originalPDF, pdfInfo.preContent.files, pdfWithPreContent);
     }).then(function () {
         var pdfBookmarkInfoFile = path.join(outputDir, "./bookmark-info.txt");
         return pdftk.updateBookmarkInfo(pdfWithPreContent, pdfInfo, pdfBookmarkInfoFile, pdfWithBookmarkInfo);
@@ -174,6 +207,6 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
     }).then(function (numberOfPages) {
         pdfInfo.preContent.toc.numberOfPages = numberOfPages;
     }).then(function () {
-        return preContentFiles;
+        pdfInfo.preContent.files = preContentFiles;
     });
 }
