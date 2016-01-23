@@ -60,39 +60,15 @@ function finish() {
         cssPath: path.join(util.outputPath(this.options), '/gitbook')
     };
 
-    return Q().then(function () {
+    return Q()
+    .then(function () {
+        return handleParts(pdfInfo);
+    }).then(function () {
         return renderTocPDF(outputDir, originalPDF, pdfInfo);
     }).then(function (tocPDF) {
         return tocHandler.findLinkPositions(tocPDF, pdfInfo);
     }).then(function (tocPDF) {
         return handlePreContent(inputDir, outputDir, tocPDF, pdfInfo);
-    }).then(function(){
-        pdfInfo.options.summary.chapters.forEach(function(chapter){
-            var chapterPath = chapter.path == "README.md" ? pdfInfo.options.firstChapter+".md" : chapter.path;
-            var chapterDir = path.dirname(chapterPath);
-            if(chapterDir.indexOf("part-") == 0){
-                var partHeaderPath = pdfInfo.options.partHeaders.filter(function(partHeader){
-                    return path.dirname(partHeader) == chapterDir;
-                })[0];
-                if(partHeaderPath && !pdfInfo.parts.status[partHeaderPath]) {
-                    pdfInfo.parts.status[partHeaderPath] = true;
-                    pdfInfo.parts.mds.push(path.join(outputDir, partHeaderPath));
-                }
-            }
-        });
-    }).then(function () {
-        if(pdfInfo.parts.mds.length) {
-            console.log("Part header files from " + outputDir+ ": " + pdfInfo.parts.mds.join(","));
-        }
-        pdfInfo.parts.mds.forEach(function (file) {
-            var pdfFile = file.replace(".md", ".pdf");
-            pdfInfo.parts.pdfs.push(pdfFile);
-        });
-    }).then(function () {
-        var partHeaderTemplate = path.resolve(__dirname , 'book/templates/part.tpl.html');
-        return mdRenderer.renderPdfs(pdfInfo.parts.mds, partHeaderTemplate, pdfInfo);
-    }).then(function (partPdfs) {
-        pdfInfo.parts.pdfs.concat(partPdfs);
     }).then(function () {
         return pdftk.join(originalPDF, pdfInfo.preContent.files, pdfWithPreContent);
     }).then(function () {
@@ -108,7 +84,7 @@ function finish() {
         return Q();
     });
 }
-    
+
 function renderTocPDF(outputDir, originalPDF, pdfInfo) {
     var tocTemplate = path.resolve(__dirname , 'book/templates/toc.tpl.html');
     var tocHTML = path.join(outputDir, "toc.html");
@@ -148,6 +124,42 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
         return calibre.generate(tocHTML, tocPDF, pdfOptions);
     }).then(function () {
         return tocPDF;
+    });
+}
+
+function handleParts(pdfInfo){
+    if(!pdfInfo.options.partHeaders || pdfInfo.options.partHeaders.length == 0){
+        return Q();
+    }
+
+    var outputDir = pdfInfo.options.output;
+    return Q().then(function(){
+        pdfInfo.options.summary.chapters.forEach(function(chapter){
+            var chapterPath = chapter.path == "README.md" ? pdfInfo.options.firstChapter+".md" : chapter.path;
+            var chapterDir = path.dirname(chapterPath);
+            if(chapterDir.indexOf("part-") == 0){
+                var partHeaderPath = pdfInfo.options.partHeaders.filter(function(partHeader){
+                    return path.dirname(partHeader) == chapterDir;
+                })[0];
+                if(partHeaderPath && !pdfInfo.parts.status[partHeaderPath]) {
+                    pdfInfo.parts.status[partHeaderPath] = true;
+                    pdfInfo.parts.mds.push(path.join(outputDir, partHeaderPath));
+                }
+            }
+        });
+    }).then(function () {
+        if(pdfInfo.parts.mds.length) {
+            console.log("Part header files from " + outputDir+ ": " + pdfInfo.parts.mds.join(","));
+        }
+        pdfInfo.parts.mds.forEach(function (file) {
+            var pdfFile = file.replace(".md", ".pdf");
+            pdfInfo.parts.pdfs.push(pdfFile);
+        });
+    }).then(function () {
+        var partHeaderTemplate = path.resolve(__dirname , 'book/templates/part.tpl.html');
+        return mdRenderer.renderPdfs(pdfInfo.parts.mds, partHeaderTemplate, pdfInfo);
+    }).then(function (partPdfs) {
+        pdfInfo.parts.pdfs.concat(partPdfs);
     });
 }
 

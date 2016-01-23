@@ -10,8 +10,6 @@ var CHAPTER_HEADER_TITLE = "Capítulo ";
 var CAPTION_PREFIX = "Figura ";
 var TOC_TITLE = "Sumário";
 
-var parts = {};
-
 module.exports = {
     "handlePageBefore": handlePageBefore,
     "handlePage": handlePage,
@@ -69,6 +67,7 @@ function handlePageAfter(page) {
     var chapter = page.progress.current;
 
     if((extension == "epub" || extension == "mobi") && this.options.partHeaders.length){
+        var parts = {};
         var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
         var chapterDir = path.dirname(chapterPath);
         if(chapterDir.indexOf("part-") == 0){
