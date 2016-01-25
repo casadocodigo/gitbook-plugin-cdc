@@ -11,13 +11,13 @@ module.exports = {
 };
 
 function extractTOC(pdfFile) {
-    
+
     console.log("pdftk - Preparing to extract toc...")
-    
+
     var d = Q.defer();
 
     return Q().then(function () {
-    
+
         var pdftkCall = 'pdftk "' + pdfFile + '" dump_data';
 
         console.log("pdftk - Calling pdftk...")
@@ -29,7 +29,7 @@ function extractTOC(pdfFile) {
                 return d.reject(error);
             }
 
-            var bookmarkInfo = 
+            var bookmarkInfo =
                 stdout
                 .split("\n")
                 .filter(function(line){
@@ -59,31 +59,38 @@ function extractTOC(pdfFile) {
               }
               flatToc.push(item);
            });
-            
+
             var toc = [];
             var chapter;
-            var i = 1;
+            var section;
             flatToc.forEach(function(item){
                 if(item.level == 1){
                     chapter = {
-                        title: (i++) + " " + item.title,
+                        title: item.title,
                         pageNumber: item.pageNumber,
                         sections: []
                     };
                     toc.push(chapter);
-                } else {
-                    var section = {
+                } else if (item.level == 2) {
+                    section = {
                         title: item.title,
                         pageNumber: item.pageNumber,
+                        subSections: []
                     };
                     chapter.sections.push(section);
+                } else if (item.level == 3) {
+                    var subSection = {
+                        title: item.title,
+                        pageNumber: item.pageNumber
+                    };
+                    section.subSections.push(subSection);
                 }
             });
-    
+
             console.log("pdftk - Extracted TOC! :)");
             return d.resolve(toc);
         });
-        
+
         return d.promise;
 
     });
@@ -97,7 +104,7 @@ function extractNumberOfPagesFromFiles(files){
     var d = Q.defer();
 
     return Q().then(function () {
-    
+
         var promises = [];
         files.forEach(function(file){
             promises.push(extractNumberOfPages(file));
@@ -191,7 +198,7 @@ function generatePdftkJoinCall(pdfFile, files, outputFile){
 
 function bookmarkInfo(info){
     var pdfInfo = "";
-    
+
     //somando 1 para considerar a capa
     var pageNumberOffset = info.preContent.extras.numberOfPages + info.preContent.intro.numberOfPages + info.preContent.toc.numberOfPages + 1;
 
@@ -222,7 +229,7 @@ function extractNumberOfPages(pdfFile) {
     var d = Q.defer();
 
     return Q().then(function () {
-    
+
         var pdftkCall = 'pdftk "' + pdfFile + '" dump_data';
 
         console.log("pdftk - Calling pdftk...");
@@ -244,7 +251,7 @@ function extractNumberOfPages(pdfFile) {
 
             return d.resolve(parseInt(numberOfPages));
         });
-        
+
         return d.promise;
 
     });

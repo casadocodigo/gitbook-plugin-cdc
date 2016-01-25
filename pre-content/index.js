@@ -62,8 +62,6 @@ function finish() {
 
     return Q()
     .then(function () {
-        return handleParts(pdfInfo);
-    }).then(function () {
         return renderTocPDF(outputDir, originalPDF, pdfInfo);
     }).then(function (tocPDF) {
         return tocHandler.findLinkPositions(tocPDF, pdfInfo);
@@ -93,12 +91,13 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
     return Q().then(function () {
         return pdftk.extractTOC(originalPDF);
     }).then(function (toc) {
-        return tocHandler.update(toc);
+        return tocHandler.update(toc, pdfInfo);
     }).then(function (toc) {
         pdfInfo.toc = toc;
         var tocOptions = {
             chapters: toc,
-            options: pdfInfo
+            options: pdfInfo,
+            hasParts: pdfInfo.options.partHeaders.length
         };
         return htmlRenderer.render(tocOptions, tocTemplate);
     }).then(function (html) {
@@ -118,48 +117,12 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
             "--margin-bottom": pdfInfo.options.pdf.margin.bottom,
             "--pdf-default-font-size": pdfInfo.options.pdf.fontSize,
             "--pdf-mono-font-size": pdfInfo.options.pdf.fontSize,
-            "--pdf-header-template": pdfInfo.options.pdf.summary.headerTemplate,
-            "--pdf-footer-template": pdfInfo.options.pdf.summary.footerTemplate
+            "--pdf-header-template": null,
+            "--pdf-footer-template": null
         };
         return calibre.generate(tocHTML, tocPDF, pdfOptions);
     }).then(function () {
         return tocPDF;
-    });
-}
-
-function handleParts(pdfInfo){
-    if(!pdfInfo.options.partHeaders || pdfInfo.options.partHeaders.length == 0){
-        return Q();
-    }
-
-    var outputDir = pdfInfo.options.output;
-    return Q().then(function(){
-        pdfInfo.options.summary.chapters.forEach(function(chapter){
-            var chapterPath = chapter.path == "README.md" ? pdfInfo.options.firstChapter+".md" : chapter.path;
-            var chapterDir = path.dirname(chapterPath);
-            if(chapterDir.indexOf("part-") == 0){
-                var partHeaderPath = pdfInfo.options.partHeaders.filter(function(partHeader){
-                    return path.dirname(partHeader) == chapterDir;
-                })[0];
-                if(partHeaderPath && !pdfInfo.parts.status[partHeaderPath]) {
-                    pdfInfo.parts.status[partHeaderPath] = true;
-                    pdfInfo.parts.mds.push(path.join(outputDir, partHeaderPath));
-                }
-            }
-        });
-    }).then(function () {
-        if(pdfInfo.parts.mds.length) {
-            console.log("Part header files from " + outputDir+ ": " + pdfInfo.parts.mds.join(","));
-        }
-        pdfInfo.parts.mds.forEach(function (file) {
-            var pdfFile = file.replace(".md", ".pdf");
-            pdfInfo.parts.pdfs.push(pdfFile);
-        });
-    }).then(function () {
-        var partHeaderTemplate = path.resolve(__dirname , 'book/templates/part.tpl.html');
-        return mdRenderer.renderPdfs(pdfInfo.parts.mds, partHeaderTemplate, pdfInfo);
-    }).then(function (partPdfs) {
-        pdfInfo.parts.pdfs.concat(partPdfs);
     });
 }
 

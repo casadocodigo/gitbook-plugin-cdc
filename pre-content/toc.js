@@ -10,32 +10,72 @@ module.exports = {
     findLinkPositions: findLinkPositions
 };
 
-function update(toc){
-    //Atualiza numero de paginas do toc, 
+function update(toc, pdfInfo){
+    //Atualiza numero de paginas do toc,
     //para o primeiro capitulo comecar na pagina 1
     
     //O toc original, gerado pelo gitbook/calibre, tem sempre apenas uma pagina.
     //isso é garantido pq o conteudo do toc original nao é visivel (display:none).
+    var pageNumberOffset = 2; //descontando 1 pagina para a capa + uma pagina para o toc original
+
+    var chapterNum = 1;
 
     var updatedToc = [];
-    var pageNumberOffset = 2; //descontando 1 pagina para a capa + uma pagina para o toc original
     toc.forEach(function(chapter){
-        var updatedChapter = { 
-            title: chapter.title,
-            pageNumber: chapter.pageNumber - pageNumberOffset, 
+        updatedToc.push(updateChapter(chapter));
+    });
+    return updatedToc;
+
+    function chapterPrefix() {
+        //quando tiver partes, nao insere numero no nivel de chapter
+        if (pdfInfo.options.partHeaders.length) {
+            return "";
+        }
+        return  chapterNum++ + " ";
+    }
+
+    function sectionPrefix() {
+        //quando tiver partes, insere numero no nivel de section
+        if (pdfInfo.options.partHeaders.length) {
+            return  chapterNum++ + " ";
+        }
+        return "";
+    }
+
+    function updateChapter(chapter) {
+        var updatedChapter = {
+            title: chapterPrefix() + chapter.title,
+            pageNumber: chapter.pageNumber - pageNumberOffset
         };
         var updatedSections = [];
         chapter.sections.forEach(function(section){
-            var updatedSection = { 
-                title: section.title,
-                pageNumber: section.pageNumber - pageNumberOffset,
-            };
-            updatedSections.push(updatedSection);
+            updatedSections.push(updateSection(section));
         });
         updatedChapter.sections = updatedSections;
-        updatedToc.push(updatedChapter);
-    });
-    return updatedToc;
+        return updatedChapter;
+    }
+
+    function updateSection(section) {
+        var updatedSection = {
+            title: sectionPrefix() + section.title,
+            pageNumber: section.pageNumber - pageNumberOffset
+        };
+        var updatedSubSections = [];
+        section.subSections.forEach(function(subSection){
+            updatedSubSections.push(updateSubSection(subSection));
+        });
+        updatedSection.subSections = updatedSubSections;
+        return updatedSection;
+    }
+
+    function updateSubSection(subSection) {
+        var updatedSubSection = {
+            title: subSection.title,
+            pageNumber: subSection.pageNumber - pageNumberOffset
+        };
+        return updatedSubSection;
+    }
+
 }
 
 function findLinkPositions(tocPdf, pdfInfo){
@@ -116,13 +156,13 @@ function findLinkPageNumber(words, i, headers){
     while (headers.indexOf(words[i]._) != -1) {
         i++;
     }
-	do {
-		var linkPage = Number(words[i]._);
-		if(!isNaN(linkPage)){
-			return linkPage;
-		}
-		i++;
-	} while (i < words.length);
+    do {
+        var linkPage = Number(words[i]._);
+        if(!isNaN(linkPage)){
+            return linkPage;
+        }
+        i++;
+    } while (i < words.length);
     return;
 }
 

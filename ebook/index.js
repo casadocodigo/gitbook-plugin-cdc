@@ -10,6 +10,8 @@ var CHAPTER_HEADER_TITLE = "Capítulo ";
 var CAPTION_PREFIX = "Figura ";
 var TOC_TITLE = "Sumário";
 
+var parts = {};
+
 module.exports = {
     "handlePageBefore": handlePageBefore,
     "handlePage": handlePage,
@@ -66,8 +68,7 @@ function handlePageAfter(page) {
 
     var chapter = page.progress.current;
 
-    if((extension == "epub" || extension == "mobi") && this.options.partHeaders.length){
-        var parts = {};
+    if(this.options.partHeaders.length){
         var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
         var chapterDir = path.dirname(chapterPath);
         if(chapterDir.indexOf("part-") == 0){
@@ -132,10 +133,11 @@ function handleEbookBefore(options) {
 
     options["--chapter-mark"] = "none";
 
+    options["--level1-toc"] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' book-chapter-1 ')]" ;
     options["--level2-toc"] = "//h:h2";
     options["--level3-toc"] = null;
-    if((extension == "epub" || extension == "mobi") && this.options.partHeaders.length){
-        options["--level1-toc"] = "//*[@class='part-header']/h:h1";
+    if(this.options.partHeaders.length){
+        options["--level1-toc"] = "//*[@class='part-header']/h:h1[1]";
         options["--level2-toc"] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' book-chapter-1 ')]" ;
         options["--level3-toc"] = "//h:h2";
     }
@@ -153,6 +155,9 @@ function handleEbookBefore(options) {
         options["--custom-size"] = this.options.pdf.customSize;
         options["--unit"] = "millimeter";
     }
+
+    options["--pdf-header-template"] = null;
+    options["--pdf-footer-template"] = null;
 
     return options;
 }
