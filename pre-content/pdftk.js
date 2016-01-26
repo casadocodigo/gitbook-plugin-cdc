@@ -215,6 +215,15 @@ function bookmarkInfo(info){
                     pdfInfo += "BookmarkTitle: " + section.title + "\n";
                     pdfInfo += "BookmarkLevel: 2\n";
                     pdfInfo += "BookmarkPageNumber: " + (section.pageNumber + pageNumberOffset) + "\n";
+
+                    if(section.subSections) {
+                        section.subSections.forEach(function(subSection){
+                            pdfInfo += "BookmarkBegin\n";
+                            pdfInfo += "BookmarkTitle: " + subSection.title + "\n";
+                            pdfInfo += "BookmarkLevel: 3\n";
+                            pdfInfo += "BookmarkPageNumber: " + (subSection.pageNumber + pageNumberOffset) + "\n";
+                        });
+                    }
                 });
             }
         });

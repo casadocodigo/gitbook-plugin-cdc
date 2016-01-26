@@ -105,6 +105,13 @@ function findLinkPositions(tocPdf, pdfInfo){
                             var link = getLink(words, page, word, i, section.title, positionTitle, headers);
                             if(link) {
                                 pageInfo.links.push(link);
+                            } else {
+                                section.subSections.forEach(function(subSection){
+                                    var link = getLink(words, page, word, i, subSection.title, positionTitle, headers);
+                                    if(link) {
+                                        pageInfo.links.push(link);
+                                    }
+                                });
                             }
                         });
                     }
