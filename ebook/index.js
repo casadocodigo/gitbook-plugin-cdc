@@ -10,14 +10,119 @@ var CHAPTER_HEADER_TITLE = "Capítulo ";
 var CAPTION_PREFIX = "Figura ";
 var TOC_TITLE = "Sumário";
 
-var parts = {};
-
 module.exports = {
+    "handleSummaryAfter": handleSummaryAfter,
     "handlePageBefore": handlePageBefore,
     "handlePage": handlePage,
     "handlePageAfter": handlePageAfter,
     "handleEbookBefore": handleEbookBefore
 };
+
+function handleSummaryAfter(summary) {
+    var options = this.options;
+
+    renderIntro(options);
+
+    renderParts(summary, options);
+
+    return summary;
+}
+
+function renderIntro(options){
+        var extension = util.obtainExtension(options);
+
+        //para epub e mobi não precisa renderizar intro, porque já está no SUMMARY.md
+        if(extension == "epub" || extension == "mobi") {
+            return;
+        }
+    
+        options.intro = [];
+
+        var introDir = path.join(options.input, "intro");
+        if(!fs.existsSync(introDir)){
+            return;
+        }
+
+        var files = fs.readdirSync(introDir);
+        var filtered = files.filter(function(file){
+            return path.extname(file) === ".md";
+        });
+        var sortedByName = filtered.sort(function (a, b) {
+            return a.localeCompare(b);
+        });
+        var mdFiles = sortedByName.map(function(file){
+            return path.resolve(introDir, file);
+        });
+        mdFiles.forEach(function(mdFile){
+                var mdData = fs.readFileSync(mdFile);
+                var htmlSnippet = kramed(mdData.toString());
+                var $ = cheerio.load(htmlSnippet);
+                var title = $("h1").first().text();
+                var img = $("img");
+                util.adjustImageWidth(img, extension);
+                htmlSnippet = $.html();
+                options.intro.push({title: title, content: htmlSnippet});
+        });
+}
+
+function renderParts(summary, options) {
+    if (options.partHeaders.length) { //se tiver partes
+        var extension = util.obtainExtension(options);
+
+        var partHeaders = {};
+        var numChapters = 0;
+        var partsByChapterPath = {};
+        summary.content.chapters.forEach(function(chapter){
+            var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
+            var chapterDir = path.dirname(chapterPath);
+            if(chapterDir.indexOf("part-") == 0){
+                var partHeaderPath = options.partHeaders.filter(function(partHeader){
+                    return path.dirname(partHeader) == chapterDir;
+                })[0];
+
+                if(!partHeaderPath) {
+                    return;
+                }
+                if(!partHeaders[partHeaderPath]) {
+                    var partHeaderFile = path.join(options.input, partHeaderPath);
+                    var partHeaderMd = fs.readFileSync(partHeaderFile);
+                    var partHeaderHtml = kramed(partHeaderMd.toString());
+
+                    var $ = cheerio.load(partHeaderHtml);
+                    var partTitle = $("h1").first().text();
+                    var img = $("img");
+                    if(chapter.path == "README.md"){
+                        var imgSrc = img.attr("src");
+                        imgSrc = imgSrc.replace(/^\.\.\//, "");
+                        img.attr("src", imgSrc);
+                    }
+                    util.adjustImageWidth(img, extension);
+                    partHeaderHtml = $.html();
+
+                    var part = {
+                        title: partTitle,
+                        chapters: [ {title: (++numChapters) + " " + chapter.title, path: chapter.path} ],
+                        partHeaderPath: partHeaderPath,
+                        partHeaderHtml: partHeaderHtml
+                    };
+                    partHeaders[partHeaderPath] = part;
+                    partsByChapterPath[chapter.path] = part;
+                } else {
+                    var part = partHeaders[partHeaderPath];
+                    partsByChapterPath[chapter.path] = part;
+                    part.chapters.push({title: (++numChapters) + " " + chapter.title, path: chapter.path});
+                }
+
+            }
+        });
+        options.partsByChapterPath = partsByChapterPath;
+        var parts = [];
+        Object.keys(partHeaders).forEach(function(partHeaderPath){
+            parts.push(partHeaders[partHeaderPath]);
+        });
+        options.parts = parts;
+    }
+}
 
 function handlePageBefore(page) {
     var maxLength = this.options.maxLineLength || 80;
@@ -60,64 +165,39 @@ function handlePage(page) {
     return page;
 }
 
+var partsAddedToPages = {};
 function handlePageAfter(page) {
     var options = this.options;
-    var extension = util.obtainExtension(options);
-
-    renderIntro(options);
 
     var chapter = page.progress.current;
 
-    if(this.options.partHeaders.length){
-        var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
-        var chapterDir = path.dirname(chapterPath);
-        if(chapterDir.indexOf("part-") == 0){
-            var partHeaderPath = options.partHeaders.filter(function(partHeader){
-                return path.dirname(partHeader) == chapterDir;
-            })[0];
-
-            if(partHeaderPath && !parts[partHeaderPath]) {
-                parts[partHeaderPath] = true;
-
-                var partHeaderFile = path.join(options.input, partHeaderPath);
-                var partHeaderMd = fs.readFileSync(partHeaderFile);
-                var partHeaderHtml = kramed(partHeaderMd.toString());
-
-                var $ = cheerio.load(partHeaderHtml);
-                var img = $("img");
-                if(chapter.path == "README.md"){
-                    var imgSrc = img.attr("src");
-                    imgSrc = imgSrc.replace(/^\.\.\//, "");
-                    img.attr("src", imgSrc);
-                }
-                util.adjustImageWidth(img, extension);
-                partHeaderHtml = $.html();
-
-                var partHeader = '<div class="part-header">\n' + partHeaderHtml + '</div>\n';
-                var $ = cheerio.load(page.content);
-                $(".page").prepend(partHeader);
-                page.content = $.html();
-            }
+    if(options.partsByChapterPath){
+        var part = options.partsByChapterPath[chapter.path];
+        if (part && !partsAddedToPages[part.title]) {
+            var partHeaderHtml = part.partHeaderHtml;
+            var partHeader = '<div class="part-header">\n' + partHeaderHtml + '</div>\n';
+            var $ = cheerio.load(page.content);
+            $(".page").prepend(partHeader);
+            page.content = $.html();
+            partsAddedToPages[part.title] = true;
         }
     }
 
-    if(isIntroFile(chapter, options)){
-       return page;
+    if(!isIntroFile(chapter, options)){
+        //inserindo numero do capitulo
+        //tem que fazer no page:after
+        //pq o h1 com titulo do capitulo
+        //é colocado depois do hook de page
+        var $ = cheerio.load(page.content);
+        var chapterHeader =
+            $("<div>")
+            .addClass("chapterHeader")
+            .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(chapter, options));
+        $("h1.book-chapter")
+            .before(chapterHeader);
+
+        page.content = $.html();
     }
-
-    //inserindo numero do capitulo
-    //tem que fazer no page:after
-    //pq o h1 com titulo do capitulo
-    //é colocado depois do hook de page
-    var $ = cheerio.load(page.content);
-    var chapterHeader =
-        $("<div>")
-        .addClass("chapterHeader")
-        .text(CHAPTER_HEADER_TITLE + obtainChapterNumber(chapter, options));
-    $("h1.book-chapter")
-        .before(chapterHeader);
-
-    page.content = $.html();
 
     return page;
 }
@@ -161,35 +241,6 @@ function handleEbookBefore(options) {
 
     return options;
 }
-
-function renderIntro(options){
-        if(options.intro){ //so roda uma vez
-            return;
-        }
-        options.intro = [];
-
-        var introDir = path.join(options.input, "intro");
-        if(!fs.existsSync(introDir)){
-            return;
-        }
-
-        var files = fs.readdirSync(introDir);
-        var filtered = files.filter(function(file){
-            return path.extname(file) === ".md";
-        });
-        var sortedByName = filtered.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
-        var mdFiles = sortedByName.map(function(file){
-            return path.resolve(introDir, file);
-        });
-        mdFiles.forEach(function(mdFile){
-                var mdData = fs.readFileSync(mdFile);
-                var htmlSnippet = kramed(mdData.toString());
-                options.intro.push({content: htmlSnippet});
-        });
-}
-
 
 function verifyChapterTitle(chapter){
     var chapterTitle = chapter.title;

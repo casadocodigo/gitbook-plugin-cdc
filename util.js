@@ -20,6 +20,9 @@ function outputPath(options) {
 var WIDTH_REGEX = /\{w=(\d+)%?\}$/;
 var DESKTOP_WIDTH = 1000;
 function adjustImageWidth(img, extension){
+	if(!img.length){
+		return;
+	}
 	//ajusta width da imagem
 	var text = img.attr("alt").trim();
 	var regexMatch = text.match(WIDTH_REGEX);
