@@ -7,26 +7,15 @@ var pdfToText = require("./pdfToText.js");
 
 module.exports = {
     update: update,
-    findLinkPositions: findLinkPositions
+    findLinkPositions: findLinkPositions,
+    tocItemsByPageNumber: tocItemsByPageNumber
 };
 
 function update(toc, pdfInfo){
     //Atualiza numero de paginas do toc,
     //para o primeiro capitulo comecar na pagina 1
-    
-    //O toc original, gerado pelo gitbook/calibre, tem sempre apenas uma pagina.
-    //isso é garantido pq o conteudo do toc original nao é visivel (display:none).
-    var pageNumberOffset = 2; //descontando 1 pagina para a capa + uma pagina para o toc original
 
-    var chapterNum = 1;
-
-    var updatedToc = [];
-    toc.forEach(function(chapter){
-        updatedToc.push(updateChapter(chapter));
-    });
-    return updatedToc;
-
-    function chapterPrefix() {
+        function chapterPrefix() {
         //quando tiver partes, nao insere numero no nivel de chapter
         if (pdfInfo.options.partHeaders.length) {
             return "";
@@ -42,23 +31,18 @@ function update(toc, pdfInfo){
         return "";
     }
 
-    function updateChapter(chapter) {
-        var updatedChapter = {
-            title: chapterPrefix() + chapter.title,
-            pageNumber: chapter.pageNumber - pageNumberOffset
+    function updateSubSection(subSection) {
+        var updatedSubSection = {
+            title: subSection.title,
+            pageNumber: subSection.pageNumber - pdfInfo.content.pageNumberOffset
         };
-        var updatedSections = [];
-        chapter.sections.forEach(function(section){
-            updatedSections.push(updateSection(section));
-        });
-        updatedChapter.sections = updatedSections;
-        return updatedChapter;
+        return updatedSubSection;
     }
 
     function updateSection(section) {
         var updatedSection = {
             title: sectionPrefix() + section.title,
-            pageNumber: section.pageNumber - pageNumberOffset
+            pageNumber: section.pageNumber - pdfInfo.content.pageNumberOffset
         };
         var updatedSubSections = [];
         section.subSections.forEach(function(subSection){
@@ -68,13 +52,27 @@ function update(toc, pdfInfo){
         return updatedSection;
     }
 
-    function updateSubSection(subSection) {
-        var updatedSubSection = {
-            title: subSection.title,
-            pageNumber: subSection.pageNumber - pageNumberOffset
+    function updateChapter(chapter) {
+        var updatedChapter = {
+            title: chapterPrefix() + chapter.title,
+            pageNumber: chapter.pageNumber - pdfInfo.content.pageNumberOffset
         };
-        return updatedSubSection;
+        var updatedSections = [];
+        chapter.sections.forEach(function(section){
+            updatedSections.push(updateSection(section));
+        });
+        updatedChapter.sections = updatedSections;
+        return updatedChapter;
     }
+
+    var chapterNum = 1;
+
+    var updatedToc = [];
+    toc.forEach(function(chapter){
+        updatedToc.push(updateChapter(chapter));
+    });
+    pdfInfo.toc = updatedToc;
+    return updatedToc;
 
 }
 
@@ -181,4 +179,50 @@ function headerText(pdfInfo){
         headers[$(this).text()] = true;
     });
     return Object.keys(headers);
+}
+
+function tocItemsByPageNumber(pdfInfo) {
+    var tocItemsByPageNumber = {};
+
+    function addTocItem(pageNumber, tocItem){
+    if(!tocItemsByPageNumber[pageNumber]){
+        tocItemsByPageNumber[pageNumber] = [ tocItem ] ;
+    } else {
+        tocItemsByPageNumber[pageNumber].push(tocItem);
+    }
+}
+
+    //fazer objeto pageNum -> title
+    pdfInfo.toc.forEach(function(chapter){
+        var chapterTocItem = { type: 'chapter', title: he.decode(chapter.title) };
+        addTocItem(chapter.pageNumber, chapterTocItem);
+        chapter.sections.forEach(function(section){
+            var sectionTocItem = {type: 'section', title: he.decode(section.title), chapter: chapterTocItem };
+            addTocItem(section.pageNumber, sectionTocItem);
+            section.subSections.forEach(function(subSection){
+                var subSectionTocItem = {type: 'subSection', title: he.decode(subSection.title), section: sectionTocItem };
+                addTocItem(subSection.pageNumber, subSectionTocItem);
+            });
+        });
+    });
+
+    //expandir pageNums
+    var tocItemsByPageNumberExpanded = {};
+    var previousPageNum;
+    Object.keys(tocItemsByPageNumber).forEach(function(pageNumber){
+        pageNumber = parseInt(pageNumber);
+        if(previousPageNum && pageNumber - previousPageNum > 1){
+            for(var i = previousPageNum + 1; i < pageNumber; i++) {
+                tocItemsByPageNumberExpanded[i] = tocItemsByPageNumber[previousPageNum].slice(-1)[0];
+            }
+        }
+        tocItemsByPageNumberExpanded[pageNumber] = tocItemsByPageNumber[pageNumber][0];
+        previousPageNum = pageNumber;
+    });
+    if(pdfInfo.content.numberOfPages - previousPageNum > 0){
+        for(var i = previousPageNum + 1; i <= pdfInfo.content.numberOfPages; i++) {
+            tocItemsByPageNumberExpanded[i] = tocItemsByPageNumber[previousPageNum].slice(-1)[0];
+        }
+    }
+    return tocItemsByPageNumberExpanded;
 }

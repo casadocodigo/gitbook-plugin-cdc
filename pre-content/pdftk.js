@@ -4,11 +4,42 @@ var fs = require("fs");
 var Q = require("q");
 
 module.exports = {
+    multistamp: multistamp,
     extractTOC: extractTOC,
     extractNumberOfPagesFromFiles: extractNumberOfPagesFromFiles,
     join: join,
     updateBookmarkInfo: updateBookmarkInfo
 };
+
+function multistamp(stamp, input, output) {
+
+    console.log("pdftk - Preparing to multistamp...")
+
+    var d = Q.defer();
+
+    return Q().then(function () {
+
+        //pdftk in.pdf multistamp stamp.pdf output out.pdf
+
+
+        var pdftkCall = 'pdftk ' + input + ' multistamp ' + stamp + ' output ' + output;
+
+        console.log("pdftk - Calling pdftk...")
+        console.log(pdftkCall);
+        
+        exec(pdftkCall, function (error, stdout, stderr) {
+            if (error) {
+                console.log("pdftk - Error while multistamping. :/");
+                return d.reject(error);
+            }
+            console.log("pdftk - Mutistamp done! :)");
+            return d.resolve();
+        });
+
+        return d.promise;
+
+    });
+}
 
 function extractTOC(pdfFile) {
 
@@ -29,63 +60,7 @@ function extractTOC(pdfFile) {
                 return d.reject(error);
             }
 
-            var bookmarkInfo =
-                stdout
-                .split("\n")
-                .filter(function(line){
-                    return line.indexOf("Bookmark") == 0 && 
-                        (line.indexOf("Level") > 0 || line.indexOf("Title") > 0 || line.indexOf("PageNumber") > 0);
-                });
-
-           var tocInfo = { 
-                          'BookmarkTitle': [],
-                          'BookmarkLevel': [],
-                          'BookmarkPageNumber': []
-                        };
-            bookmarkInfo.forEach(function(el){
-               var index = el.indexOf(':');
-               var key = el.substring(0, index);
-               var value = el.substring(index+1);
-               tocInfo[key].push(value);
-            });
-
-
-            var flatToc = [];
-            tocInfo['BookmarkTitle'].forEach(function(el, i){
-              var item = {
-                  title: tocInfo.BookmarkTitle[i].trim(),
-                  level: parseInt(tocInfo.BookmarkLevel[i]),
-                  pageNumber: parseInt(tocInfo.BookmarkPageNumber[i])
-              }
-              flatToc.push(item);
-           });
-
-            var toc = [];
-            var chapter;
-            var section;
-            flatToc.forEach(function(item){
-                if(item.level == 1){
-                    chapter = {
-                        title: item.title,
-                        pageNumber: item.pageNumber,
-                        sections: []
-                    };
-                    toc.push(chapter);
-                } else if (item.level == 2) {
-                    section = {
-                        title: item.title,
-                        pageNumber: item.pageNumber,
-                        subSections: []
-                    };
-                    chapter.sections.push(section);
-                } else if (item.level == 3) {
-                    var subSection = {
-                        title: item.title,
-                        pageNumber: item.pageNumber
-                    };
-                    section.subSections.push(subSection);
-                }
-            });
+            var toc = buildTocFromDumpedData(stdout);
 
             console.log("pdftk - Extracted TOC! :)");
             return d.resolve(toc);
@@ -168,6 +143,66 @@ function updateBookmarkInfo(inputFile, info, infoFile, outputFile){
             });
             return d.promise;
         });
+}
+
+function buildTocFromDumpedData(pdftkData){
+    var bookmarkInfo =
+        pdftkData
+        .split("\n")
+        .filter(function(line){
+            return line.indexOf("Bookmark") == 0 && 
+                (line.indexOf("Level") > 0 || line.indexOf("Title") > 0 || line.indexOf("PageNumber") > 0);
+        });
+
+    var tocInfo = {
+      'BookmarkTitle': [],
+      'BookmarkLevel': [],
+      'BookmarkPageNumber': []
+    };
+    bookmarkInfo.forEach(function(el){
+       var index = el.indexOf(':');
+       var key = el.substring(0, index);
+       var value = el.substring(index+1);
+       tocInfo[key].push(value);
+    });
+
+    var flatToc = [];
+    tocInfo['BookmarkTitle'].forEach(function(el, i){
+      var item = {
+          title: tocInfo.BookmarkTitle[i].trim(),
+          level: parseInt(tocInfo.BookmarkLevel[i]),
+          pageNumber: parseInt(tocInfo.BookmarkPageNumber[i])
+      }
+      flatToc.push(item);
+   });
+
+    var toc = [];
+    var chapter;
+    var section;
+    flatToc.forEach(function(item){
+        if(item.level == 1){
+            chapter = {
+                title: item.title,
+                pageNumber: item.pageNumber,
+                sections: []
+            };
+            toc.push(chapter);
+        } else if (item.level == 2) {
+            section = {
+                title: item.title,
+                pageNumber: item.pageNumber,
+                subSections: []
+            };
+            chapter.sections.push(section);
+        } else if (item.level == 3) {
+            var subSection = {
+                title: item.title,
+                pageNumber: item.pageNumber
+            };
+            section.subSections.push(subSection);
+        }
+    });
+    return toc;
 }
 
 function generatePdftkJoinCall(pdfFile, files, outputFile){

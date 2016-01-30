@@ -28,8 +28,6 @@ function finish() {
     var inputDir = this.options.input;
     var outputDir = this.options.output;
 
-    var originalPDF = path.join(outputDir, "index.pdf");
-
     var pdfWithPreContent = path.join(outputDir, "./index-with-pre-content.pdf");
 
     var pdfWithBookmarkInfo = path.join(outputDir, "./index-with-pre-content-and-bookmarks.pdf");
@@ -40,6 +38,14 @@ function finish() {
             author: this.options.author,
             publisher: this.options.publisher,
             title: this.options.title
+        },
+        content: {
+            //O toc original, gerado pelo gitbook/calibre, tem sempre apenas uma pagina.
+            //isso é garantido pq o conteudo do toc original nao é visivel (display:none).
+            //descontando 1 pagina para a capa + uma pagina para o toc original
+            pageNumberOffset: 2,
+            originalNumberOfPages: 0,
+            numberOfPages: 0
         },
         preContent: {
             extras: { numberOfPages: 0 },
@@ -56,19 +62,28 @@ function finish() {
             pdfs: []
         },
         options : this.options,
+        originalPDF: path.join(outputDir, "./index.pdf"),
+        hasParts: this.options.partHeaders.length > 0,
         css: this.plugins.resources.css,
-        cssPath: path.join(util.outputPath(this.options), '/gitbook')
+        cssPath: path.join(util.outputPath(this.options), './gitbook')
     };
 
     return Q()
     .then(function () {
-        return renderTocPDF(outputDir, originalPDF, pdfInfo);
+        return pdftk.extractNumberOfPagesFromFiles([pdfInfo.originalPDF]);
+    }).then(function (numberOfPages) {
+        pdfInfo.content.originalNumberOfPages = numberOfPages;
+        pdfInfo.content.numberOfPages = numberOfPages - pdfInfo.content.pageNumberOffset;
+    }).then(function () {
+        return renderTocPDF(outputDir, pdfInfo);
     }).then(function (tocPDF) {
         return tocHandler.findLinkPositions(tocPDF, pdfInfo);
     }).then(function (tocPDF) {
         return handlePreContent(inputDir, outputDir, tocPDF, pdfInfo);
     }).then(function () {
-        return pdftk.join(originalPDF, pdfInfo.preContent.files, pdfWithPreContent);
+        return headerAndFooter(pdfInfo);
+    }).then(function () {
+        return pdftk.join(pdfInfo.pdfWithHeaderAndFooter, pdfInfo.preContent.files, pdfWithPreContent);
     }).then(function () {
         var pdfBookmarkInfoFile = path.join(outputDir, "./bookmark-info.txt");
         return pdftk.updateBookmarkInfo(pdfWithPreContent, pdfInfo, pdfBookmarkInfoFile, pdfWithBookmarkInfo);
@@ -83,25 +98,109 @@ function finish() {
     });
 }
 
-function renderTocPDF(outputDir, originalPDF, pdfInfo) {
-    var tocTemplate = path.resolve(__dirname , 'book/templates/toc.tpl.html');
-    var tocHTML = path.join(outputDir, "toc.html");
-    var tocPDF = path.join(outputDir, "./toc.pdf");
-
+function headerAndFooter(pdfInfo) {
     return Q().then(function () {
-        return pdftk.extractTOC(originalPDF);
+        pdfInfo.headerFooterDir = path.join(pdfInfo.options.output, "./header-footer");
+        return Q.nfcall(fs.mkdir, pdfInfo.headerFooterDir);
+    }).then(function () {
+        var tocItemsByPageNumber = tocHandler.tocItemsByPageNumber(pdfInfo);
+        //renderizar pdf com cabeçalho e rodapé (inclusive imagens)
+        var promises = [];
+        var pageNumbers = Object.keys(tocItemsByPageNumber)
+        var lastPageNumber = pageNumbers.length;
+        pageNumbers.forEach(function(pageNumber){
+            pageNumber = parseInt(pageNumber);
+            var next = undefined;
+            if (pageNumber + 1 <= lastPageNumber){
+                next = pageNumber + 1;
+            }
+            var tocItem = tocItemsByPageNumber[pageNumber];
+            var promise = Q().then(function(){
+                var headerFooterOptions = {
+                    tocItem: tocItem,
+                    pageNumber: pageNumber,
+                    next: next,
+                    options: pdfInfo
+                };
+                return htmlRenderer.render(headerFooterOptions, pdfInfo.options.pdf.headerFooterTemplate);
+            }).then(function(html){
+                var headerFooterPath = path.join(pdfInfo.headerFooterDir, "./"+pageNumber+".html");
+                return Q.nfcall(fs.writeFile, headerFooterPath, html);
+            });
+            promises.push(promise);
+        });
+        return Q.all(promises);
+    }).then(function () {
+        return Q()
+            .then(function(){
+                var headerFooterOptions = {
+                    tocItem: null,
+                    pageNumber: null,
+                    next: "blank-toc",
+                    options: pdfInfo
+                };
+                return htmlRenderer.render(headerFooterOptions, pdfInfo.options.pdf.headerFooterTemplate);
+            })
+            .then(function(html){
+                var headerFooterPath = path.join(pdfInfo.headerFooterDir, "./blank-cover.html");
+                return Q.nfcall(fs.writeFile, headerFooterPath, html);
+            })
+            .then(function(){
+                var headerFooterOptions = {
+                    tocItem: null,
+                    pageNumber: null,
+                    next: "1",
+                    options: pdfInfo
+                };
+                return htmlRenderer.render(headerFooterOptions, pdfInfo.options.pdf.headerFooterTemplate);
+            })
+            .then(function(html){
+                var headerFooterPath = path.join(pdfInfo.headerFooterDir, "./blank-toc.html");
+                return Q.nfcall(fs.writeFile, headerFooterPath, html);
+            });
+    }).then(function () {
+        var pdfOptions = {
+            "--pdf-page-numbers": null,
+            "--disable-font-rescaling": true,
+            "--paper-size": null,
+            "--unit": "millimeter",
+            "--chapter": "/",
+            "--page-breaks-before": "/",
+            "--custom-size": pdfInfo.options.pdf.customSize,
+            "--margin-left": pdfInfo.options.pdf.margin.left,
+            "--margin-right": pdfInfo.options.pdf.margin.right,
+            "--margin-top": pdfInfo.options.pdf.margin.top,
+            "--margin-bottom": pdfInfo.options.pdf.margin.bottom,
+            "--pdf-default-font-size": pdfInfo.options.pdf.fontSize,
+            "--pdf-mono-font-size": pdfInfo.options.pdf.fontSize,
+            "--pdf-header-template": null,
+            "--pdf-footer-template": null,
+            "--max-levels": pdfInfo.content.originalNumberOfPages,
+            "--breadth-first": true
+        };
+        var firstHeaderFooterHtmlPath = path.join(pdfInfo.headerFooterDir, "./blank-cover.html");
+        pdfInfo.headerFooterPath = path.join(pdfInfo.headerFooterDir, "./header-footer.pdf");
+        return calibre.generate(firstHeaderFooterHtmlPath, pdfInfo.headerFooterPath, pdfOptions);
+    }).then(function(){
+        pdfInfo.pdfWithHeaderAndFooter = path.join(pdfInfo.options.output, "./index-with-header-and-footer.pdf");
+        return pdftk.multistamp(pdfInfo.headerFooterPath, pdfInfo.originalPDF, pdfInfo.pdfWithHeaderAndFooter);
+    });
+}
+
+function renderTocPDF(outputDir, pdfInfo) {
+    pdfInfo.tocHTML = path.join(outputDir, "toc.html");
+    return Q().then(function () {
+        return pdftk.extractTOC(pdfInfo.originalPDF);
     }).then(function (toc) {
         return tocHandler.update(toc, pdfInfo);
-    }).then(function (toc) {
-        pdfInfo.toc = toc;
+    }).then(function () {
         var tocOptions = {
-            chapters: toc,
-            options: pdfInfo,
-            hasParts: pdfInfo.options.partHeaders.length
+            chapters: pdfInfo.toc,
+            options: pdfInfo
         };
-        return htmlRenderer.render(tocOptions, tocTemplate);
+        return htmlRenderer.render(tocOptions, pdfInfo.options.pdf.tocTemplate);
     }).then(function (html) {
-        return Q.nfcall(fs.writeFile, tocHTML, html);
+        return Q.nfcall(fs.writeFile, pdfInfo.tocHTML, html);
     }).then(function () {
         var pdfOptions = {
             "--pdf-page-numbers": null,
@@ -120,9 +219,10 @@ function renderTocPDF(outputDir, originalPDF, pdfInfo) {
             "--pdf-header-template": null,
             "--pdf-footer-template": null
         };
-        return calibre.generate(tocHTML, tocPDF, pdfOptions);
+        pdfInfo.tocPDF = path.join(outputDir, "./toc.pdf");
+        return calibre.generate(pdfInfo.tocHTML, pdfInfo.tocPDF, pdfOptions);
     }).then(function () {
-        return tocPDF;
+        return pdfInfo.tocPDF;
     });
 }
 
@@ -164,8 +264,7 @@ function handlePreContent(inputDir, outputDir, tocPDF, pdfInfo) {
         });
         return introMDs;
     }).then(function (introMDs) {
-        var introTemplate = path.resolve(__dirname , 'book/templates/intro.tpl.html');
-        return mdRenderer.renderPdfs(introMDs, introTemplate, pdfInfo);
+        return mdRenderer.renderPdfs(introMDs, pdfInfo.options.pdf.introTemplate, pdfInfo);
     }).then(function () {
         preContentFiles = extraFiles.concat(introFiles);
         preContentFiles.push(tocPDF);
