@@ -92,7 +92,7 @@ function finish() {
         return gs.updatePageNumberInfo(pdfWithBookmarkInfo, pdfInfo, pdfPageNumberInfoFile, pdfWithPageNumberInfo);
     }).then(function () {
         if (command === "pdf") {
-            return Q.nfcall(fs.copy, pdfWithPageNumberInfo, originalPDF);
+            return Q.nfcall(fs.copy, pdfWithPageNumberInfo, pdfInfo.originalPDF);
         }
         return Q();
     });
@@ -216,8 +216,8 @@ function renderTocPDF(outputDir, pdfInfo) {
             "--margin-bottom": pdfInfo.options.pdf.margin.bottom,
             "--pdf-default-font-size": pdfInfo.options.pdf.fontSize,
             "--pdf-mono-font-size": pdfInfo.options.pdf.fontSize,
-            "--pdf-header-template": null,
-            "--pdf-footer-template": null
+            "--pdf-header-template": pdfInfo.options.pdf.summary.headerTemplate,
+            "--pdf-footer-template": pdfInfo.options.pdf.summary.footerTemplate
         };
         pdfInfo.tocPDF = path.join(outputDir, "./toc.pdf");
         return calibre.generate(pdfInfo.tocHTML, pdfInfo.tocPDF, pdfOptions);
