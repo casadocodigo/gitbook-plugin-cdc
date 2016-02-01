@@ -3,8 +3,6 @@ var fs = require("fs");
 
 var Q = require("q");
 
-//var NAO_MUDAR_IMAGENS = '-dColorConversionStrategy=/LeaveColorUnchanged -dEncodeColorImages=false -dEncodeGrayImages=false -dEncodeMonoImages=false '; //colocar para nao perder detalhes das imagens. problema: arquivo fica gigante!
-
 function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile){
     console.log("gs - Preparing to update page number info...");
     var d = Q.defer();
@@ -13,7 +11,7 @@ function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile){
                 return Q.nfcall(fs.writeFile, pageInfoFile, pageNumberInfo(pageInfo), { encoding: "ascii"});
             }).
             then(function(){
-                var gsCall = 'gs -q -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
+                var gsCall = 'gs -q -dPDFSETTINGS=/prepress -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
 
                 console.log("gs - Calling gs...");
                 console.log(gsCall);
