@@ -11,7 +11,8 @@ function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile){
                 return Q.nfcall(fs.writeFile, pageInfoFile, pageNumberInfo(pageInfo), { encoding: "ascii"});
             }).
             then(function(){
-                var gsCall = 'gs -q -dPDFSETTINGS=/prepress -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
+                var pdfSettings = pageInfo.options.pdfImageQuality||"prepress";
+                var gsCall = 'gs -q -dPDFSETTINGS=/'+pdfSettings+' -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
 
                 console.log("gs - Calling gs...");
                 console.log(gsCall);
