@@ -91,12 +91,15 @@ function renderParts(summary, options) {
                     var $ = cheerio.load(partHeaderHtml);
                     var partTitle = $("h1").first().text();
                     var img = $("img");
-                    if(chapter.path == "README.md"){
-                        var imgSrc = img.attr("src");
-                        imgSrc = imgSrc.replace(/^\.\.\//, "");
-                        img.attr("src", imgSrc);
+                    if(img.length){
+                        if(chapter.path == "README.md"){
+                            var imgSrc = img.attr("src");
+                            imgSrc = imgSrc.replace(/^\.\.\//, "");
+                            img.attr("src", imgSrc);
+                        }
+                        util.adjustImageWidth(img, extension);
                     }
-                    util.adjustImageWidth(img, extension);
+
                     partHeaderHtml = $.html();
 
                     var part = {
