@@ -71,7 +71,8 @@ function renderParts(summary, options) {
 
         var partHeaders = {};
         var numChapters = 0;
-        var partsByChapterPath = {};
+        var partsByPathOfFirstChapter = {};
+
         summary.content.chapters.forEach(function(chapter){
             var chapterPath = chapter.path == "README.md" ? options.firstChapter+".md" : chapter.path;
             var chapterDir = path.dirname(chapterPath);
@@ -107,16 +108,15 @@ function renderParts(summary, options) {
                         partHeaderHtml: partHeaderHtml
                     };
                     partHeaders[partHeaderPath] = part;
-                    partsByChapterPath[chapter.path] = part;
+                    partsByPathOfFirstChapter[chapter.path] = part;
                 } else {
                     var part = partHeaders[partHeaderPath];
-                    partsByChapterPath[chapter.path] = part;
                     part.chapters.push({title: (++numChapters) + " " + chapter.title, path: chapter.path});
                 }
 
             }
         });
-        options.partsByChapterPath = partsByChapterPath;
+        options.partsByPathOfFirstChapter = partsByPathOfFirstChapter;
         var parts = [];
         Object.keys(partHeaders).forEach(function(partHeaderPath){
             parts.push(partHeaders[partHeaderPath]);
@@ -172,8 +172,8 @@ function handlePageAfter(page) {
 
     var chapter = page.progress.current;
 
-    if(options.partsByChapterPath){
-        var part = options.partsByChapterPath[chapter.path];
+    if(options.partsByPathOfFirstChapter){
+        var part = options.partsByPathOfFirstChapter[chapter.path];
         if (part && !partsAddedToPages[part.title]) {
             var partHeaderHtml = part.partHeaderHtml;
             var partHeader = '<div class="part-header">\n' + partHeaderHtml + '</div>\n';
