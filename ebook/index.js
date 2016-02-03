@@ -93,9 +93,7 @@ function renderParts(summary, options) {
                     var img = $("img");
                     if(img.length){
                         if(chapter.path == "README.md"){
-                            var imgSrc = img.attr("src");
-                            imgSrc = imgSrc.replace(/^\.\.\//, "");
-                            img.attr("src", imgSrc);
+                            stripLeadingRelativePath(img);
                         }
                         util.adjustImageWidth(img, extension);
                     }
@@ -294,11 +292,21 @@ function adjustImages($, chapter, section, options) {
     var chapterNumber = obtainChapterNumber(chapter, options);
     $("img").each(function (i) {
         var img = $(this);
+        //se o primeiro capitulo original tiver dentro de pastas, deve tirar os ../
+        if(chapter.path == "README.md" && options.firstChapter.indexOf("/") > 0){
+            stripLeadingRelativePath(img);
+        }
         util.adjustImageWidth(img, extension);
         insertImageCaption($, img, i, chapterNumber);
     });
 
     section.content = $.html();
+}
+
+function stripLeadingRelativePath(img){
+    var imgSrc = img.attr("src");
+    imgSrc = imgSrc.replace(/^\.\.\//, "");
+    img.attr("src", imgSrc);
 }
 
 function insertImageCaption($, img, i, chapterNumber){
