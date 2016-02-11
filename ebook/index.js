@@ -217,7 +217,7 @@ function handleEbookBefore(options) {
     options["--level1-toc"] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' book-chapter-1 ')]" ;
     options["--level2-toc"] = "//h:h2";
     options["--level3-toc"] = null;
-    if(this.options.partHeaders.length){
+    if(this.options.partHeaders && this.options.partHeaders.length){
         options["--level1-toc"] = "//*[@class='part-header']/h:h1[1]";
         options["--level2-toc"] = "descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' book-chapter-1 ')]" ;
         options["--level3-toc"] = "//h:h2";
