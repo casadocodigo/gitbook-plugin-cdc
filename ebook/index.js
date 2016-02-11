@@ -66,7 +66,7 @@ function renderIntro(options){
 }
 
 function renderParts(summary, options) {
-    if (options.partHeaders.length) { //se tiver partes
+    if (options.partHeaders && options.partHeaders.length) { //se tiver partes
         var extension = util.obtainExtension(options);
 
         var partHeaders = {};
