@@ -17,7 +17,7 @@ function update(toc, pdfInfo){
 
         function chapterPrefix() {
         //quando tiver partes, nao insere numero no nivel de chapter
-        if (pdfInfo.options.partHeaders.length) {
+        if (pdfInfo.options.partHeaders && pdfInfo.options.partHeaders.length) {
             return "";
         }
         return  chapterNum++ + " ";
