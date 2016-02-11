@@ -63,7 +63,7 @@ function finish() {
         },
         options : this.options,
         originalPDF: path.join(outputDir, "./index.pdf"),
-        hasParts: this.options.partHeaders.length > 0,
+        hasParts: this.options.partHeaders && this.options.partHeaders.length > 0,
         css: this.plugins.resources.css,
         cssPath: path.join(util.outputPath(this.options), './gitbook')
     };
