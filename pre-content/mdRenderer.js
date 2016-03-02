@@ -6,7 +6,7 @@ var kramed = require("kramed");
 
 var htmlRenderer = require("./htmlRenderer.js");
 var util = require("./../util.js");
-var calibre = require("./../cmd/calibre.js");
+var calibre = require("./../cmd/calibre");
 
 function renderPdfs(files, template, pdfInfo){
     return Q()

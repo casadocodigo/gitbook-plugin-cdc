@@ -9,9 +9,9 @@ var tocHandler = require("./toc.js");
 var htmlRenderer = require("./htmlRenderer.js");
 var dir = require("./dir.js");
 var mdRenderer = require("./mdRenderer.js");
-var pdftk = require("./../cmd/pdftk.js");
-var gs = require("./../cmd/gs.js");
-var calibre = require("./../cmd/calibre.js");
+var pdftk = require("./../cmd/pdftk");
+var gs = require("./../cmd/gs");
+var calibre = require("./../cmd/calibre");
 
 module.exports = {
     "finish": finish

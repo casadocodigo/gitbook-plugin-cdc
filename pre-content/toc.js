@@ -3,7 +3,7 @@ var xml2js = require("xml2js");
 var he = require("he");
 var cheerio = require("cheerio");
 
-var pdfToText = require("./../cmd/pdfToText.js");
+var pdfToText = require("./../cmd/pdfToText");
 
 module.exports = {
     update: update,
