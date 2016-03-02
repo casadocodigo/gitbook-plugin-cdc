@@ -4,9 +4,9 @@ var Q = require("q");
 var cheerio = require("cheerio");
 var kramed = require("kramed");
 
-var calibre = require("./calibre.js");
 var htmlRenderer = require("./htmlRenderer.js");
 var util = require("./../util.js");
+var calibre = require("./../cmd/calibre.js");
 
 function renderPdfs(files, template, pdfInfo){
     return Q()

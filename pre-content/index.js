@@ -5,13 +5,13 @@ var Q = require("q");
 
 var util = require("./../util.js");
 
-var pdftk = require("./pdftk.js");
 var tocHandler = require("./toc.js");
 var htmlRenderer = require("./htmlRenderer.js");
-var calibre = require("./calibre.js");
 var dir = require("./dir.js");
 var mdRenderer = require("./mdRenderer.js");
-var gs = require("./gs.js");
+var pdftk = require("./../cmd/pdftk.js");
+var gs = require("./../cmd/gs.js");
+var calibre = require("./../cmd/calibre.js");
 
 module.exports = {
     "finish": finish
