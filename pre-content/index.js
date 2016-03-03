@@ -6,12 +6,12 @@ var Q = require("q");
 var util = require("./../util.js");
 
 var tocHandler = require("./toc.js");
-var htmlRenderer = require("./htmlRenderer.js");
 var dir = require("./dir.js");
-var mdRenderer = require("./mdRenderer.js");
 var pdftk = require("./../cmd/pdftk");
 var gs = require("./../cmd/gs");
 var calibre = require("./../cmd/calibre");
+var htmlRenderer = require("./../renderers/html");
+var mdRenderer = require("./../renderers/md");
 
 module.exports = {
     "finish": finish
