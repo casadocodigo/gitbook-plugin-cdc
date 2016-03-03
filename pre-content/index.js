@@ -3,10 +3,10 @@ var path = require("path");
 var fs = require("fs-extra");
 var Q = require("q");
 
-var util = require("./../util.js");
-
 var tocHandler = require("./toc.js");
 var dir = require("./dir.js");
+var fileHelper = require("./../helpers/fileHelper");
+var imageHelper = require("./../helpers/imageHelper");
 var pdftk = require("./../cmd/pdftk");
 var gs = require("./../cmd/gs");
 var calibre = require("./../cmd/calibre");
@@ -19,7 +19,7 @@ module.exports = {
 
 function finish() {
     var command = this.options._name;
-    var extension = util.obtainExtension(this.options);
+    var extension = fileHelper.obtainExtension(this.options);
 
     if (extension !== "pdf") {
         return;
@@ -65,7 +65,7 @@ function finish() {
         originalPDF: path.join(outputDir, "./index.pdf"),
         hasParts: this.options.partHeaders && this.options.partHeaders.length > 0,
         css: this.plugins.resources.css,
-        cssPath: path.join(util.outputPath(this.options), './gitbook')
+        cssPath: path.join(fileHelper.outputPath(this.options), './gitbook')
     };
 
     return Q()

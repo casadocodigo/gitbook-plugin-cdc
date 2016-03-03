@@ -5,8 +5,9 @@ var cheerio = require('cheerio');
 var kramed = require('kramed');
 
 var htmlRenderer = require('./../html');
-var util = require('./../../util.js');
 var calibre = require('./../../cmd/calibre');
+var imageHelper = require('./../../helpers/imageHelper');
+var fileHelper = require('./../../helpers/fileHelper');
 
 function renderPdfs(files, template, pdfInfo) {
   return Q()
@@ -25,12 +26,12 @@ function _renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo) {
   return Q().then(function () {
     return Q.nfcall(fs.readFile, mdFile);
   }).then(function (mdData) {
-    var extension = util.obtainExtension(pdfInfo.options);
+    var extension = fileHelper.obtainExtension(pdfInfo.options);
     var htmlSnippet = kramed(mdData.toString());
     var $ = cheerio.load(htmlSnippet);
     var img = $('img');
     if (img.length) {
-      util.adjustImageWidth(img, extension);
+      imageHelper.adjustImageWidth(img, extension);
       htmlSnippet = $.html();
     }
     return htmlSnippet;

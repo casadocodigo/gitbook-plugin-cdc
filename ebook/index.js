@@ -4,7 +4,8 @@ var fs = require("fs");
 var cheerio = require("cheerio");
 var kramed = require("kramed");
 
-var util = require("./../util.js");
+var fileHelper = require("./../helpers/fileHelper");
+var imageHelper = require("./../helpers/imageHelper");
 
 var CHAPTER_HEADER_TITLE = "Capítulo ";
 var CAPTION_PREFIX = "Figura ";
@@ -29,7 +30,7 @@ function handleSummaryAfter(summary) {
 }
 
 function renderIntro(options){
-        var extension = util.obtainExtension(options);
+        var extension = fileHelper.obtainExtension(options);
 
         //para epub e mobi não precisa renderizar intro, porque já está no SUMMARY.md
         if(extension == "epub" || extension == "mobi") {
@@ -59,7 +60,7 @@ function renderIntro(options){
                 var $ = cheerio.load(htmlSnippet);
                 var title = $("h1").first().text();
                 var img = $("img");
-                util.adjustImageWidth(img, extension);
+                imageHelper.adjustImageWidth(img, extension);
                 htmlSnippet = $.html();
                 options.intro.push({title: title, content: htmlSnippet});
         });
@@ -67,7 +68,7 @@ function renderIntro(options){
 
 function renderParts(summary, options) {
     if (options.partHeaders && options.partHeaders.length) { //se tiver partes
-        var extension = util.obtainExtension(options);
+        var extension = fileHelper.obtainExtension(options);
 
         var partHeaders = {};
         var numChapters = 0;
@@ -96,7 +97,7 @@ function renderParts(summary, options) {
                         if(chapter.path == "README.md"){
                             stripLeadingRelativePath(img);
                         }
-                        util.adjustImageWidth(img, extension);
+                        imageHelper.adjustImageWidth(img, extension);
                     }
 
                     partHeaderHtml = $.html();
@@ -206,7 +207,7 @@ function handlePageAfter(page) {
 
 function handleEbookBefore(options) {
 
-    var extension = util.obtainExtension(this.options);
+    var extension = fileHelper.obtainExtension(this.options);
 
     //options["-d debug"] = true;
 
@@ -288,7 +289,7 @@ function sectionNumber(chapterNumber, text, i) {
 }
 
 function adjustImages($, chapter, section, options) {
-    var extension = util.obtainExtension(options);
+    var extension = fileHelper.obtainExtension(options);
     var chapterNumber = obtainChapterNumber(chapter, options);
     $("img").each(function (i) {
         var img = $(this);
@@ -296,7 +297,7 @@ function adjustImages($, chapter, section, options) {
         if(chapter.path == "README.md" && options.firstChapter.indexOf("/") > 0){
             stripLeadingRelativePath(img);
         }
-        util.adjustImageWidth(img, extension);
+        imageHelper.adjustImageWidth(img, extension);
         insertImageCaption($, img, i, chapterNumber);
     });
 
@@ -335,7 +336,7 @@ function removeComments($, section){
 
 function isIntroFile(chapter, options){
     //para epub e mobi, .md da intro sao colocados no SUMMARY
-    var extension = util.obtainExtension(options);
+    var extension = fileHelper.obtainExtension(options);
     var numIntroChapters = options.numIntroChapters;
     if((extension == "epub" || extension == "mobi") && numIntroChapters > 0 && (chapter.path == "README.md" || chapter.path.indexOf("intro") == 0)){
         return true;
