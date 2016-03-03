@@ -1,4 +1,4 @@
-var ebook = require("./ebook");
+var renderHooks = require("./renderHooks");
 var preContent = require("./pre-content");
 
 /*
@@ -36,19 +36,19 @@ var preContent = require("./pre-content");
 module.exports = {
     hooks: {
         "summary:after": function (summary) {
-            return ebook.handleSummaryAfter.call(this, summary);
+            return renderHooks.handleSummaryAfter.call(this, summary);
         }
         , "page:before": function(page) {
-            return ebook.handlePageBefore.call(this, page);
+            return renderHooks.handlePageBefore.call(this, page);
         }
         , "page": function(page) {
-            return ebook.handlePage.call(this, page);
+            return renderHooks.handlePage.call(this, page);
         }
         , "page:after": function(page) {
-            return ebook.handlePageAfter.call(this, page);
+            return renderHooks.handlePageAfter.call(this, page);
         }
         , "ebook:before": function(options) {
-            return ebook.handleEbookBefore.call(this, options);
+            return renderHooks.handleEbookBefore.call(this, options);
         }
         , "finish": function() {
             return preContent.finish.call(this);
