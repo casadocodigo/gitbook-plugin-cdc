@@ -1,40 +1,44 @@
-var Q = require("q");
-var swig = require("swig");
+var Q = require('q');
+var swig = require('swig');
 
-function render(params, templateLocation){
+function render(params, templateLocation) {
 
-    //console.log("htmlRenderer - Preparing to render html...");
+  //console.log('htmlRenderer - Preparing to render html...');
 
-    var d = Q.defer();
-    return Q()
-        .then(function(){
+  var d = Q.defer();
+  return Q()
+    .then(function () {
 
-        //console.log("htmlRenderer - Rendering html...");
-        swig.setDefaults({ locals: {
-            version: function () {
-                var d = new Date();
-                var v = ((d.getFullYear() % 100)*12) + d.getMonth();
-                var final = "" + parseInt(v / 10) + "." + (v % 10) + "." + d.getDate();
+      //console.log('htmlRenderer - Rendering html...');
+      swig.setDefaults({
+        locals: {
+          version: function () {
+            var d = new Date();
+            var v = ((d.getFullYear() % 100) * 12) + d.getMonth();
+            var final = '' + parseInt(v / 10) + '.' + (v % 10) + '.' + d.getDate();
 
-                console.log("BOOK_VERSION " + final);
-                return final;
-            }
-        }});
+            console.log('BOOK_VERSION ' + final);
+            return final;
+          }
+        }
+      });
 
-        swig.compileFile(templateLocation, {autoescape: false}, function(error, template){
-            if(error){
-                console.log("htmlRenderer - Error rendering html. :/");
-                return d.reject(error);
-            }
-            var output = template(params);
-            //console.log("htmlRenderer - html rendered! :)");
-            return d.resolve(output);
+      swig.compileFile(templateLocation, {
+        autoescape: false
+      }, function (error, template) {
+        if (error) {
+          console.log('htmlRenderer - Error rendering html. :/');
+          return d.reject(error);
+        }
+        var output = template(params);
+        //console.log('htmlRenderer - html rendered! :)');
+        return d.resolve(output);
 
-        });
-        return d.promise;
+      });
+      return d.promise;
     });
 }
 
 module.exports = {
-    render: render
+  render: render
 };
