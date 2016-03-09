@@ -2,6 +2,24 @@ var exec = require('child_process').exec;
 
 var Q = require('q');
 
+function _calibreOptions(options) {
+  var calibreOptions = '';
+  var option;
+  for (option in options) {
+    if (options.hasOwnProperty(option)) {
+      var value = options[option];
+      if (value) {
+        if (typeof value === 'boolean') {
+          calibreOptions += option + ' ';
+        } else {
+          calibreOptions += option + '="' + options[option] + '" ';
+        }
+      }
+    }
+  }
+  return calibreOptions;
+}
+
 function generate(inputFilename, outputFilename, options) {
   var d = Q.defer();
 
@@ -15,7 +33,7 @@ function generate(inputFilename, outputFilename, options) {
 
     exec(calibreCall, function (error, stdout, stderr) {
       if (error) {
-        console.log('calibre - Error calling calibre. :/')
+        console.log('calibre - Error calling calibre. :/');
         return d.reject(error.message + ' ' + stdout);
       }
       console.log('calibre - done! :)');
@@ -24,21 +42,6 @@ function generate(inputFilename, outputFilename, options) {
 
     return d.promise;
   });
-}
-
-function _calibreOptions(options) {
-  var calibreOptions = '';
-  for (option in options) {
-    var value = options[option];
-    if (value) {
-      if (typeof value == 'boolean') {
-        calibreOptions += option + ' ';
-      } else {
-        calibreOptions += option + '="' + options[option] + '" ';
-      }
-    }
-  }
-  return calibreOptions;
 }
 
 module.exports = {

@@ -11,10 +11,10 @@ function adjustImageWidth(img, extension) {
   if (regexMatch && regexMatch[1]) {
     text = text.replace(WIDTH_REGEX, '');
     var width = regexMatch[1];
-    if (extension == 'pdf') {
+    if (extension === 'pdf') {
       img.css('width', width + '%');
     } else {
-      var maxWidth = parseInt(width) / 100 * DESKTOP_WIDTH;
+      var maxWidth = parseInt(width, 10) / 100 * DESKTOP_WIDTH;
       img.css('max-width', maxWidth + 'px');
     }
     img.attr('alt', text);
@@ -23,4 +23,4 @@ function adjustImageWidth(img, extension) {
 
 module.exports = {
   'adjustImageWidth': adjustImageWidth
-}
+};

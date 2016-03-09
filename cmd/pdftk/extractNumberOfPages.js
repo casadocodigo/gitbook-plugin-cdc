@@ -2,39 +2,8 @@ var exec = require('child_process').exec;
 
 var Q = require('q');
 
-function extractNumberOfPagesFromFiles(files) {
-  if (!files.length) {
-    return 0;
-  }
-
-  var d = Q.defer();
-
-  return Q().then(function () {
-
-    var promises = [];
-    files.forEach(function (file) {
-      promises.push(_extractNumberOfPages(file));
-    });
-
-    Q.all(promises)
-      .spread(function () {
-        var sum = [].
-        reduce
-          .call(arguments, function (a, b) {
-            return a + b;
-          });
-        return d.resolve(sum);
-      }, function (error) {
-        return d.reject(error);
-      });
-
-    return d.promise;
-
-  });
-}
-
 function _extractNumberOfPages(pdfFile) {
-  console.log('pdftk - Preparing to extract number of pages...')
+  console.log('pdftk - Preparing to extract number of pages...');
 
   var d = Q.defer();
 
@@ -55,12 +24,43 @@ function _extractNumberOfPages(pdfFile) {
         stdout
         .split('\n')
         .filter(function (line) {
-          return line.indexOf('NumberOfPages') == 0;
+          return line.indexOf('NumberOfPages') === 0;
         })[0].split(':')[1];
       console.log('pdftk - Extracted number of pages! :)');
 
-      return d.resolve(parseInt(numberOfPages));
+      return d.resolve(parseInt(numberOfPages, 10));
     });
+
+    return d.promise;
+
+  });
+}
+
+function extractNumberOfPagesFromFiles(files) {
+  if (!files.length) {
+    return 0;
+  }
+
+  var d = Q.defer();
+
+  return Q().then(function () {
+
+    var promises = [];
+    files.forEach(function (file) {
+      promises.push(_extractNumberOfPages(file));
+    });
+
+    Q.all(promises)
+      .spread(function () {
+        var sum = [].
+          reduce
+          .call(arguments, function (a, b) {
+            return a + b;
+          });
+        return d.resolve(sum);
+      }, function (error) {
+        return d.reject(error);
+      });
 
     return d.promise;
 

@@ -3,34 +3,6 @@ var fs = require('fs');
 
 var Q = require('q');
 
-function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile) {
-  console.log('gs - Preparing to update page number info...');
-  var d = Q.defer();
-  return Q().
-  then(function (output) {
-    return Q.nfcall(fs.writeFile, pageInfoFile, _pageNumberInfo(pageInfo), {
-      encoding: 'ascii'
-    });
-  }).
-  then(function () {
-    var pdfSettings = pageInfo.options.pdfImageQuality || 'prepress';
-    var gsCall = 'gs -q -dPDFSETTINGS=/' + pdfSettings + ' -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
-
-    console.log('gs - Calling gs...');
-    console.log(gsCall);
-
-    exec(gsCall, function (error, stdout, stderr) {
-      if (error) {
-        console.log('gs - Error while updating page number info. :/');
-        return d.reject(error);
-      }
-      console.log('gs - Updated page number info! :)');
-      return d.resolve();
-    });
-    return d.promise;
-  });
-}
-
 function _pageNumberInfo(info) {
   var firstChapterPageNumber = info.preContent.extras.numberOfPages + info.preContent.intro.numberOfPages + info.preContent.toc.numberOfPages + 1;
 
@@ -41,7 +13,7 @@ function _pageNumberInfo(info) {
   pdfMarks += '/Producer (' + info.book.publisher + ')\n';
   pdfMarks += '/DOCINFO pdfmark\n';
   pdfMarks += '[/_objdef {pl} /type /dict /OBJ pdfmark\n';
-  pdfMarks += '[{pl} <</Nums [ \n'
+  pdfMarks += '[{pl} <</Nums [ \n';
   pdfMarks += '0 << /S /r >> \n'; //capa e sumário em números romanos
   pdfMarks += firstChapterPageNumber + ' << /S /D /St 1 >> \n';
   pdfMarks += ']>> /PUT pdfmark\n';
@@ -63,6 +35,33 @@ function _pageNumberInfo(info) {
   return pdfMarks;
 }
 
+function updatePageNumberInfo(inputFile, pageInfo, pageInfoFile, outputFile) {
+  console.log('gs - Preparing to update page number info...');
+  var d = Q.defer();
+  return Q().
+    then(function (output) {
+      return Q.nfcall(fs.writeFile, pageInfoFile, _pageNumberInfo(pageInfo), {
+        encoding: 'ascii'
+      });
+    }).
+    then(function () {
+      var pdfSettings = pageInfo.options.pdfImageQuality || 'prepress';
+      var gsCall = 'gs -q -dPDFSETTINGS=/' + pdfSettings + ' -o ' + outputFile + ' -sDEVICE=pdfwrite ' + inputFile + ' ' + pageInfoFile;
+
+      console.log('gs - Calling gs...');
+      console.log(gsCall);
+
+      exec(gsCall, function (error, stdout, stderr) {
+        if (error) {
+          console.log('gs - Error while updating page number info. :/');
+          return d.reject(error);
+        }
+        console.log('gs - Updated page number info! :)');
+        return d.resolve();
+      });
+      return d.promise;
+    });
+}
 
 /*
 References:

@@ -4,7 +4,7 @@ var Q = require('q');
 
 function multistamp(stamp, input, output) {
 
-  console.log('pdftk - Preparing to multistamp...')
+  console.log('pdftk - Preparing to multistamp...');
 
   var d = Q.defer();
 
@@ -15,7 +15,7 @@ function multistamp(stamp, input, output) {
 
     var pdftkCall = 'pdftk ' + input + ' multistamp ' + stamp + ' output ' + output;
 
-    console.log('pdftk - Calling pdftk...')
+    console.log('pdftk - Calling pdftk...');
     console.log(pdftkCall);
 
     exec(pdftkCall, function (error, stdout, stderr) {

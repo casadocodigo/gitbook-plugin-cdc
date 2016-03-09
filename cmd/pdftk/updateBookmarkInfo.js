@@ -3,30 +3,6 @@ var fs = require('fs');
 
 var Q = require('q');
 
-function updateBookmarkInfo(inputFile, info, infoFile, outputFile) {
-  console.log('pdftk - Preparing to update bookmark info...');
-  var d = Q.defer();
-  return Q()
-    .then(function (output) {
-      return Q.nfcall(fs.writeFile, infoFile, _bookmarkInfo(info));
-    }).then(function () {
-      var pdftkCall = 'pdftk ' + inputFile + ' update_info ' + infoFile + ' output ' + outputFile;
-
-      console.log('pdftk - Calling pdftk...')
-      console.log(pdftkCall);
-
-      exec(pdftkCall, function (error, stdout, stderr) {
-        if (error) {
-          console.log('pdftk - Error while updating bookmark info. :/');
-          return d.reject(error);
-        }
-        console.log('pdftk - Updated bookmark info! :)');
-        return d.resolve();
-      });
-      return d.promise;
-    });
-}
-
 function _bookmarkInfo(info) {
   var pdfInfo = '';
 
@@ -61,6 +37,30 @@ function _bookmarkInfo(info) {
   }
 
   return pdfInfo;
+}
+
+function updateBookmarkInfo(inputFile, info, infoFile, outputFile) {
+  console.log('pdftk - Preparing to update bookmark info...');
+  var d = Q.defer();
+  return Q()
+    .then(function (output) {
+      return Q.nfcall(fs.writeFile, infoFile, _bookmarkInfo(info));
+    }).then(function () {
+      var pdftkCall = 'pdftk ' + inputFile + ' update_info ' + infoFile + ' output ' + outputFile;
+
+      console.log('pdftk - Calling pdftk...');
+      console.log(pdftkCall);
+
+      exec(pdftkCall, function (error, stdout, stderr) {
+        if (error) {
+          console.log('pdftk - Error while updating bookmark info. :/');
+          return d.reject(error);
+        }
+        console.log('pdftk - Updated bookmark info! :)');
+        return d.resolve();
+      });
+      return d.promise;
+    });
 }
 
 module.exports = updateBookmarkInfo;

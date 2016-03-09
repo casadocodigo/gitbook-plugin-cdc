@@ -15,7 +15,7 @@ function render(params, templateLocation) {
           version: function () {
             var d = new Date();
             var v = ((d.getFullYear() % 100) * 12) + d.getMonth();
-            var final = '' + parseInt(v / 10) + '.' + (v % 10) + '.' + d.getDate();
+            var final = parseInt((v / 10), 10) + '.' + (v % 10) + '.' + d.getDate();
 
             console.log('BOOK_VERSION ' + final);
             return final;

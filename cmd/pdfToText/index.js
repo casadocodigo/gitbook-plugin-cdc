@@ -6,7 +6,7 @@ function extractTextPositions(pdfFile) {
   var d = Q.defer();
   return Q().then(function () {
     var pdfToTextCall = 'pdftotext -bbox ' + pdfFile + ' -';
-    console.log('pdftotext - Calling pdftotext...')
+    console.log('pdftotext - Calling pdftotext...');
     console.log(pdfToTextCall);
     exec(pdfToTextCall, function (error, stdout, stderr) {
       if (error) {

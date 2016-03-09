@@ -9,19 +9,6 @@ var calibre = require('./../../cmd/calibre');
 var imageHelper = require('./../../helpers/imageHelper');
 var fileHelper = require('./../../helpers/fileHelper');
 
-function renderPdfs(files, template, pdfInfo) {
-  return Q()
-    .then(function () {
-      var promises = [];
-      files.forEach(function (mdFile) {
-        var htmlFile = mdFile.replace('.md', '.html');
-        var pdfFile = htmlFile.replace('.html', '.pdf');
-        promises.push(_renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo));
-      });
-      return Q.all(promises);
-    });
-}
-
 function _renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo) {
   return Q().then(function () {
     return Q.nfcall(fs.readFile, mdFile);
@@ -67,6 +54,19 @@ function _renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo) {
   });
 }
 
+function renderPdfs(files, template, pdfInfo) {
+  return Q()
+    .then(function () {
+      var promises = [];
+      files.forEach(function (mdFile) {
+        var htmlFile = mdFile.replace('.md', '.html');
+        var pdfFile = htmlFile.replace('.html', '.pdf');
+        promises.push(_renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo));
+      });
+      return Q.all(promises);
+    });
+}
+
 module.exports = {
   renderPdfs: renderPdfs
-}
+};
