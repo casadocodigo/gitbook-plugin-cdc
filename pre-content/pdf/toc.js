@@ -1,9 +1,9 @@
-var Q = require("q");
-var xml2js = require("xml2js");
-var he = require("he");
-var cheerio = require("cheerio");
+var Q = require('q');
+var xml2js = require('xml2js');
+var he = require('he');
+var cheerio = require('cheerio');
 
-var pdfToText = require("./../cmd/pdfToText");
+var pdfToText = require('./../../cmd/pdfToText');
 
 function _findLinkPageNumber(words, i, headers) {
   while (headers.indexOf(words[i]._) !== -1) {
@@ -27,17 +27,17 @@ function update(toc, pdfInfo) {
   function _chapterPrefix() {
     //quando tiver partes, nao insere numero no nivel de chapter
     if (pdfInfo.options.partHeaders && pdfInfo.options.partHeaders.length) {
-      return "";
+      return '';
     }
-    return chapterNum++ + " ";
+    return chapterNum++ + ' ';
   }
 
   function _sectionPrefix() {
     //quando tiver partes, insere numero no nivel de section
     if (pdfInfo.options.partHeaders && pdfInfo.options.partHeaders.length) {
-      return chapterNum++ + " ";
+      return chapterNum++ + ' ';
     }
-    return "";
+    return '';
   }
 
   function _updateSubSection(subSection) {
@@ -84,7 +84,7 @@ function update(toc, pdfInfo) {
 }
 
 function _getLink(words, page, word, i, title, positionTitle, headers) {
-  var decodedSpacelessTitle = he.decode(title.replace(/\s/g, ""));
+  var decodedSpacelessTitle = he.decode(title.replace(/\s/g, ''));
   if (decodedSpacelessTitle === positionTitle) {
     var link = {
       xMin: Number(word.$.xMin),
@@ -105,7 +105,7 @@ function _headerText(pdfInfo) {
   //skips header text
   var $ = cheerio.load(pdfInfo.options.pdf.summary.headerTemplate);
   var headers = {};
-  $("*").each(function () {
+  $('*').each(function () {
     headers[$(this).text()] = true;
   });
   return Object.keys(headers);
@@ -116,10 +116,10 @@ function _positionXmlToJs(xml) {
   return Q().then(function () {
     xml2js.parseString(xml, function (err, result) {
       if (err) {
-        console.log("Error transforming position xml to js... :/");
+        console.log('Error transforming position xml to js... :/');
         return d.reject(err);
       }
-      console.log("Transformed position xml to js! :)");
+      console.log('Transformed position xml to js! :)');
       return d.resolve(result);
     });
     return d.promise;
@@ -133,7 +133,7 @@ function findLinkPositions(tocPdf, pdfInfo) {
     })
     .then(_positionXmlToJs)
     .then(function (positions) {
-      console.log("Building pdf links...");
+      console.log('Building pdf links...');
       var headers = _headerText(pdfInfo);
 
       var pages = positions.html.body[0].doc[0].page;
@@ -143,7 +143,7 @@ function findLinkPositions(tocPdf, pdfInfo) {
           links: []
         };
         words.forEach(function (word, i) {
-          var positionTitle = word._.replace(/\s/g, "");
+          var positionTitle = word._.replace(/\s/g, '');
           pdfInfo.toc.forEach(function (chapter) {
             var link = _getLink(words, page, word, i, chapter.title, positionTitle, headers);
             if (link) {
@@ -167,7 +167,7 @@ function findLinkPositions(tocPdf, pdfInfo) {
         });
         pdfInfo.positions.pages.push(pageInfo);
       });
-      console.log("Built pdf links...");
+      console.log('Built pdf links...');
     })
     .then(function () {
       return tocPdf;

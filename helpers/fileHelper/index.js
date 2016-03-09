@@ -1,7 +1,7 @@
 var path = require('path');
-var fs = require("fs");
+var fs = require('fs');
 
-var Q = require("q");
+var Q = require('q');
 
 function obtainExtension(options) {
   var extension = options.extension || path.extname(options.output).replace('.', '');

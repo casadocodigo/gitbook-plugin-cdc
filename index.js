@@ -51,7 +51,7 @@ module.exports = {
       return renderHooks.handleEbookBefore.call(this, options);
     },
     'finish': function () {
-      return preContent.finish.call(this);
+      return preContent.addPreContent.call(this);
     }
   }
 };
