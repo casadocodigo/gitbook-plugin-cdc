@@ -21,6 +21,21 @@ function adjustImageWidth(img, extension) {
   }
 }
 
+function insertImageCaption($, img, captionPrefix) {
+  //insere div com caption
+  var text = img.attr('alt').trim();
+  var parent = img.parent();
+  img.remove();
+  var figure = $('<div class="figure">').append(img);
+  parent.after(figure);
+  if (text.length > 0) {
+    var caption = $('<p class="figcaption">');
+    caption.text(captionPrefix + ': ' + text);
+    figure.append(caption);
+  }
+}
+
 module.exports = {
-  'adjustImageWidth': adjustImageWidth
+  'adjustImageWidth': adjustImageWidth,
+  'insertImageCaption': insertImageCaption
 };

@@ -16,11 +16,13 @@ function _renderPdf(mdFile, htmlFile, pdfFile, template, pdfInfo) {
     var extension = fileHelper.obtainExtension(pdfInfo.options);
     var htmlSnippet = kramed(mdData.toString());
     var $ = cheerio.load(htmlSnippet);
-    var img = $('img');
-    if (img.length) {
+    $('img').each(function(i){
+      var img = $(this);
       imageHelper.adjustImageWidth(img, extension);
-      htmlSnippet = $.html();
-    }
+      var captionPrefix = 'Figura ' + (i + 1);
+      imageHelper.insertImageCaption($, img, captionPrefix);
+    });
+    htmlSnippet = $.html();
     return htmlSnippet;
   }).then(function (htmlSnippet) {
     if (template) {

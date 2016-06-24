@@ -167,8 +167,12 @@ function _renderIntro(options) {
     var htmlSnippet = kramed(mdData.toString());
     var $ = cheerio.load(htmlSnippet);
     var title = $('h1').first().text();
-    var img = $('img');
-    imageHelper.adjustImageWidth(img, extension);
+    $('img').each(function(i){
+      var img = $(this);
+      imageHelper.adjustImageWidth(img, extension);
+      var captionPrefix = CAPTION_PREFIX + (i + 1);
+      imageHelper.insertImageCaption($, img, captionPrefix);
+    });
     htmlSnippet = $.html();
     options.intro.push({
       title: title,
@@ -210,7 +214,7 @@ function _renderParts(summary, options) {
             }
             imageHelper.adjustImageWidth(img, extension);
             var captionPrefix = CAPTION_PREFIX + (i + 1);
-            _insertImageCaption($, img, captionPrefix);
+            imageHelper.insertImageCaption($, img, captionPrefix);
           });
           partHeaderHtml = $.html();
 
@@ -302,9 +306,8 @@ function _adjustImages($, chapter, section, options) {
     }
     imageHelper.adjustImageWidth(img, extension);
     var captionPrefix = CAPTION_PREFIX + chapterNumber + '.' + (i + 1);
-    _insertImageCaption($, img, captionPrefix);
+    imageHelper.insertImageCaption($, img, captionPrefix);
   });
-
   section.content = $.html();
 }
 
@@ -312,20 +315,6 @@ function _stripLeadingRelativePath(img) {
   var imgSrc = img.attr('src');
   imgSrc = imgSrc.replace(/^\.\.\//, '');
   img.attr('src', imgSrc);
-}
-
-function _insertImageCaption($, img, captionPrefix) {
-  //insere div com caption
-  var text = img.attr('alt').trim();
-  var parent = img.parent();
-  img.remove();
-  var figure = $('<div class="figure">').append(img);
-  parent.after(figure);
-  if (text.length > 0) {
-    var caption = $('<p class="figcaption">');
-    caption.text(captionPrefix + ': ' + text);
-    figure.append(caption);
-  }
 }
 
 function _removeComments($, section) {
