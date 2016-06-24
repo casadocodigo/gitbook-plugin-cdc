@@ -203,14 +203,15 @@ function _renderParts(summary, options) {
 
           var $ = cheerio.load(partHeaderHtml);
           var partTitle = $('h1').first().text();
-          var img = $('img');
-          if (img.length) {
+          $('img').each(function(i){
+            var img = $(this);
             if (chapter.path == 'README.md') {
-              stripLeadingRelativePath(img);
+              _stripLeadingRelativePath(img);
             }
             imageHelper.adjustImageWidth(img, extension);
-          }
-
+            var captionPrefix = CAPTION_PREFIX + (i + 1);
+            _insertImageCaption($, img, captionPrefix);
+          });
           partHeaderHtml = $.html();
 
           var part = {
@@ -300,7 +301,8 @@ function _adjustImages($, chapter, section, options) {
       _stripLeadingRelativePath(img);
     }
     imageHelper.adjustImageWidth(img, extension);
-    _insertImageCaption($, img, i, chapterNumber);
+    var captionPrefix = CAPTION_PREFIX + chapterNumber + '.' + (i + 1);
+    _insertImageCaption($, img, captionPrefix);
   });
 
   section.content = $.html();
@@ -312,7 +314,7 @@ function _stripLeadingRelativePath(img) {
   img.attr('src', imgSrc);
 }
 
-function _insertImageCaption($, img, i, chapterNumber) {
+function _insertImageCaption($, img, captionPrefix) {
   //insere div com caption
   var text = img.attr('alt').trim();
   var parent = img.parent();
@@ -321,7 +323,7 @@ function _insertImageCaption($, img, i, chapterNumber) {
   parent.after(figure);
   if (text.length > 0) {
     var caption = $('<p class="figcaption">');
-    caption.text(CAPTION_PREFIX + chapterNumber + '.' + (i + 1) + ': ' + text);
+    caption.text(captionPrefix + ': ' + text);
     figure.append(caption);
   }
 }
