@@ -80,6 +80,8 @@ function handlePageAfter(page) {
     }
   }
 
+  var chapterHeaderTitle = options.chapterHeaderTitle || CHAPTER_HEADER_TITLE;
+
   if (!_isIntroFile(chapter, options)) {
     //inserindo numero do capitulo
     //tem que fazer no page:after
@@ -89,7 +91,7 @@ function handlePageAfter(page) {
     var chapterHeader =
       $('<div>')
       .addClass('chapterHeader')
-      .text(CHAPTER_HEADER_TITLE + _obtainChapterNumber(chapter, options));
+      .text(chapterHeaderTitle + _obtainChapterNumber(chapter, options));
     $('h1.book-chapter')
       .before(chapterHeader);
 
@@ -121,7 +123,7 @@ function handleEbookBefore(options) {
 
   if (extension === 'mobi') {
     options['--mobi-keep-original-images'] = true;
-    options['--toc-title'] = TOC_TITLE;
+    options['--toc-title'] = options.tocTitle || TOC_TITLE;
   }
 
   if (extension === 'pdf') {
@@ -170,8 +172,9 @@ function _renderIntro(options) {
     $('img').each(function(i){
       var img = $(this);
       imageHelper.adjustImageWidth(img, extension);
-      var captionPrefix = CAPTION_PREFIX + (i + 1);
-      imageHelper.insertImageCaption($, img, captionPrefix);
+      var captionPrefix = options.captionPrefix + ' ' || CAPTION_PREFIX;
+      var captionLabel = captionPrefix + (i + 1);
+      imageHelper.insertImageCaption($, img, captionLabel);
     });
     htmlSnippet = $.html();
     options.intro.push({
@@ -213,8 +216,9 @@ function _renderParts(summary, options) {
               _stripLeadingRelativePath(img);
             }
             imageHelper.adjustImageWidth(img, extension);
-            var captionPrefix = CAPTION_PREFIX + (i + 1);
-            imageHelper.insertImageCaption($, img, captionPrefix);
+            var captionPrefix = options.captionPrefix + ' ' || CAPTION_PREFIX;
+            var captionLabel = captionPrefix + (i + 1);
+            imageHelper.insertImageCaption($, img, captionLabel);
           });
           partHeaderHtml = $.html();
 
@@ -305,8 +309,9 @@ function _adjustImages($, chapter, section, options) {
       _stripLeadingRelativePath(img);
     }
     imageHelper.adjustImageWidth(img, extension);
-    var captionPrefix = CAPTION_PREFIX + chapterNumber + '.' + (i + 1);
-    imageHelper.insertImageCaption($, img, captionPrefix);
+    var captionPrefix = options.captionPrefix + ' ' || CAPTION_PREFIX;
+    var captionLabel = captionPrefix + chapterNumber + '.' + (i + 1);
+    imageHelper.insertImageCaption($, img, captionLabel);
   });
   section.content = $.html();
 }
