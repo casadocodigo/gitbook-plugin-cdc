@@ -214,7 +214,8 @@ function addPreContent() {
     book: {
       author: this.options.author,
       publisher: this.options.publisher,
-      title: this.options.title
+      title: this.options.title,
+      version: this.options.version
     },
     content: {
       //O toc original, gerado pelo gitbook/calibre, tem sempre apenas uma pagina.
