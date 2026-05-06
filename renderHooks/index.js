@@ -96,6 +96,11 @@ function handlePageAfter(page) {
     page.content = $.html();
   }
 
+  if (fileHelper.obtainExtension(options) === 'epub') {
+    var sanitized = _sanitizePageFragmentIds(page.content);
+    page.content = sanitized.content;
+  }
+
   return page;
 }
 
@@ -209,7 +214,9 @@ function _renderParts(summary, options) {
           var partTitle = $('h1').first().text();
           $('img').each(function(i){
             var img = $(this);
-            if (chapter.path == 'README.md') {
+            if (extension === 'epub' || extension === 'mobi') {
+              _rebaseImageSourceForFlatEbookOutput(img, partHeaderPath);
+            } else if (chapter.path == 'README.md') {
               _stripLeadingRelativePath(img);
             }
             imageHelper.adjustImageWidth(img, extension);
@@ -298,10 +305,13 @@ function _sectionNumber(chapterNumber, text, i) {
 function _adjustImages($, chapter, section, options) {
   var extension = fileHelper.obtainExtension(options);
   var chapterNumber = _obtainChapterNumber(chapter, options);
+  var sourcePath = _sourceDocPathForChapter(chapter, options);
   $('img').each(function (i) {
     var img = $(this);
-    //se o primeiro capitulo original tiver dentro de pastas, deve tirar os ../
-    if (chapter.path == 'README.md' && options.firstChapter.indexOf('/') > 0) {
+    if (extension === 'epub' || extension === 'mobi') {
+      _rebaseImageSourceForFlatEbookOutput(img, sourcePath);
+    } else if (chapter.path == 'README.md' && options.firstChapter.indexOf('/') > 0) {
+      //se o primeiro capitulo original tiver dentro de pastas, deve tirar os ../
       _stripLeadingRelativePath(img);
     }
     imageHelper.adjustImageWidth(img, extension);
@@ -315,6 +325,121 @@ function _stripLeadingRelativePath(img) {
   var imgSrc = img.attr('src');
   imgSrc = imgSrc.replace(/^\.\.\//, '');
   img.attr('src', imgSrc);
+}
+
+function _rebaseImageSourceForFlatEbookOutput(img, sourceDocPath) {
+  var imgSrc = img.attr('src');
+  var resolvedPath;
+  var rebasedPath;
+
+  if (!imgSrc || /^(https?:|data:|mailto:|#|\/)/.test(imgSrc)) {
+    return;
+  }
+
+  resolvedPath = path.normalize(path.join(path.dirname(sourceDocPath), imgSrc));
+  rebasedPath = path.relative('.', resolvedPath).replace(/\\/g, '/');
+
+  img.attr('src', rebasedPath);
+}
+
+function _sourceDocPathForChapter(chapter, options) {
+  var extension = fileHelper.obtainExtension(options);
+  var introDir;
+  var introFiles;
+
+  if (chapter.path !== 'README.md') {
+    return chapter.path;
+  }
+
+  if ((extension === 'epub' || extension === 'mobi') && Number(options.numIntroChapters) > 0) {
+    introDir = path.join(options.input, 'intro');
+    if (fs.existsSync(introDir)) {
+      introFiles = fs.readdirSync(introDir).filter(function (file) {
+        return path.extname(file) === '.md';
+      }).sort(function (fileA, fileB) {
+        return fileA.localeCompare(fileB);
+      });
+
+      if (introFiles.length) {
+        return path.join('intro', introFiles[0]);
+      }
+    }
+  }
+
+  return options.firstChapter + '.md';
+}
+
+function _sanitizePageFragmentIds(content) {
+  var $ = cheerio.load(content);
+  var rewrittenIds = {};
+  var usedIds = {};
+
+  $('[id]').each(function () {
+    var element = $(this);
+    var originalId = element.attr('id');
+    var sanitizedId = rewrittenIds[originalId];
+
+    if (!sanitizedId) {
+      sanitizedId = _sanitizeFragmentId(originalId);
+      while (usedIds[sanitizedId]) {
+        usedIds[sanitizedId]++;
+        sanitizedId = _sanitizeFragmentId(originalId) + '-' + usedIds[sanitizedId];
+      }
+      usedIds[sanitizedId] = 1;
+      rewrittenIds[originalId] = sanitizedId;
+    }
+
+    element.attr('id', sanitizedId);
+  });
+
+  $('[href]').each(function () {
+    var element = $(this);
+    var href = element.attr('href');
+    var hashIndex;
+    var baseHref;
+    var fragment;
+
+    if (!href) {
+      return;
+    }
+
+    hashIndex = href.indexOf('#');
+    if (hashIndex < 0) {
+      return;
+    }
+
+    baseHref = href.substring(0, hashIndex);
+    fragment = href.substring(hashIndex + 1);
+    if (!fragment || /^(https?:|mailto:)/.test(href)) {
+      return;
+    }
+
+    element.attr('href', baseHref + '#' + (rewrittenIds[fragment] || _sanitizeFragmentId(fragment)));
+  });
+
+  return {
+    content: $.html(),
+    rewrittenIds: rewrittenIds
+  };
+}
+
+function _sanitizeFragmentId(id) {
+  var sanitized = (id || '').trim();
+
+  sanitized = sanitized.replace(/:/g, '-');
+  sanitized = sanitized.replace(/[^A-Za-z0-9_.-]+/g, '-');
+  sanitized = sanitized.replace(/^-+/, '');
+  sanitized = sanitized.replace(/-+$/, '');
+
+  if (!sanitized) {
+    sanitized = 'section';
+  }
+
+  if (!/^[A-Za-z_]/.test(sanitized)) {
+    sanitized = 'id-' + sanitized;
+  }
+
+  return sanitized;
 }
 
 function _removeComments($, section) {
