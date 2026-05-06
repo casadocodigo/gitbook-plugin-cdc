@@ -78,6 +78,8 @@ function _renderTocPDF(outputDir, pdfInfo) {
   }).then(function (toc) {
     return tocHandler.update(toc, pdfInfo);
   }).then(function () {
+    return tocHandler.repairUsingRenderedText(pdfInfo);
+  }).then(function () {
     var tocOptions = {
       chapters: pdfInfo.toc,
       options: pdfInfo
