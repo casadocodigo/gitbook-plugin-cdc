@@ -96,6 +96,11 @@ function handlePageAfter(page) {
     page.content = $.html();
   }
 
+  if (fileHelper.obtainExtension(options) === 'epub') {
+    var sanitized = _sanitizePageFragmentIds(page.content);
+    page.content = sanitized.content;
+  }
+
   return page;
 }
 
@@ -169,6 +174,7 @@ function _renderIntro(options) {
     var title = $('h1').first().text();
     $('img').each(function(i){
       var img = $(this);
+      _normalizeBookRelativeImageSource(img, path.relative(options.input, mdFile), options);
       imageHelper.adjustImageWidth(img, extension);
       var captionPrefix = CAPTION_PREFIX + (i + 1);
       imageHelper.insertImageCaption($, img, captionPrefix);
@@ -209,6 +215,7 @@ function _renderParts(summary, options) {
           var partTitle = $('h1').first().text();
           $('img').each(function(i){
             var img = $(this);
+            _normalizeBookRelativeImageSource(img, partHeaderPath, options);
             if (chapter.path == 'README.md') {
               _stripLeadingRelativePath(img);
             }
@@ -300,8 +307,9 @@ function _adjustImages($, chapter, section, options) {
   var chapterNumber = _obtainChapterNumber(chapter, options);
   $('img').each(function (i) {
     var img = $(this);
-    //se o primeiro capitulo original tiver dentro de pastas, deve tirar os ../
+    _normalizeBookRelativeImageSource(img, chapter.path, options);
     if (chapter.path == 'README.md' && options.firstChapter.indexOf('/') > 0) {
+      //se o primeiro capitulo original tiver dentro de pastas, deve tirar os ../
       _stripLeadingRelativePath(img);
     }
     imageHelper.adjustImageWidth(img, extension);
@@ -315,6 +323,103 @@ function _stripLeadingRelativePath(img) {
   var imgSrc = img.attr('src');
   imgSrc = imgSrc.replace(/^\.\.\//, '');
   img.attr('src', imgSrc);
+}
+
+function _normalizeBookRelativeImageSource(img, sourceDocPath, options) {
+  var imgSrc = img.attr('src');
+  var sourceDir;
+  var localPath;
+  var rootPath;
+  var normalizedPath;
+
+  if (!imgSrc || /^\./.test(imgSrc) || /^(?:[a-z]+:|\/)/i.test(imgSrc)) {
+    return;
+  }
+
+  sourceDir = path.dirname(sourceDocPath);
+  localPath = path.join(options.input, sourceDir, imgSrc);
+  rootPath = path.join(options.input, imgSrc);
+
+  // An image beside the chapter takes precedence over the book-level folder.
+  if (fs.existsSync(localPath) || !fs.existsSync(rootPath)) {
+    return;
+  }
+
+  normalizedPath = path.relative(sourceDir, imgSrc).replace(/\\/g, '/');
+  img.attr('src', normalizedPath);
+}
+
+function _sanitizePageFragmentIds(content) {
+  var $ = cheerio.load(content);
+  var rewrittenIds = {};
+  var usedIds = {};
+
+  $('[id]').each(function () {
+    var element = $(this);
+    var originalId = element.attr('id');
+    var sanitizedId = rewrittenIds[originalId];
+
+    if (!sanitizedId) {
+      sanitizedId = _sanitizeFragmentId(originalId);
+      while (usedIds[sanitizedId]) {
+        usedIds[sanitizedId]++;
+        sanitizedId = _sanitizeFragmentId(originalId) + '-' + usedIds[sanitizedId];
+      }
+      usedIds[sanitizedId] = 1;
+      rewrittenIds[originalId] = sanitizedId;
+    }
+
+    element.attr('id', sanitizedId);
+  });
+
+  $('[href]').each(function () {
+    var element = $(this);
+    var href = element.attr('href');
+    var hashIndex;
+    var baseHref;
+    var fragment;
+
+    if (!href) {
+      return;
+    }
+
+    hashIndex = href.indexOf('#');
+    if (hashIndex < 0) {
+      return;
+    }
+
+    baseHref = href.substring(0, hashIndex);
+    fragment = href.substring(hashIndex + 1);
+    if (!fragment || /^(https?:|mailto:)/.test(href)) {
+      return;
+    }
+
+    element.attr('href', baseHref + '#' + (rewrittenIds[fragment] || _sanitizeFragmentId(fragment)));
+  });
+
+  return {
+    content: $.html(),
+    rewrittenIds: rewrittenIds
+  };
+}
+
+function _sanitizeFragmentId(id) {
+  var sanitized = (id || '').trim();
+
+  sanitized = sanitized.replace(/:/g, '-');
+  sanitized = sanitized.replace(/[^A-Za-z0-9_.-]+/g, '-');
+  sanitized = sanitized.replace(/^-+/, '');
+  sanitized = sanitized.replace(/-+$/, '');
+
+  if (!sanitized) {
+    sanitized = 'section';
+  }
+
+  if (!/^[A-Za-z_]/.test(sanitized)) {
+    sanitized = 'id-' + sanitized;
+  }
+
+  return sanitized;
 }
 
 function _removeComments($, section) {
